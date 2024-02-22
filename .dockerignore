@@ -1,0 +1,13 @@
+target/
+
+mysql/
+
+docker-compose.yml
+Dockerfile
+
+Makefile
+
+env.development
+end.test
+
+
