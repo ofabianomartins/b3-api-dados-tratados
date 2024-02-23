@@ -1,10 +1,10 @@
 #[macro_use] extern crate rocket;
 
-mod actions;
+mod controllers;
 
 #[launch]
 fn rocket() -> _ {
-    rocket::build().mount("/", routes![actions::hello])
+    rocket::build().mount("/", routes![controllers::calendars::index])
 }
 
 #[cfg(test)]

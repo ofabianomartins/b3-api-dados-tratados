@@ -1,11 +1,11 @@
-use super::rocket;
+use crate::rocket;
 use rocket::local::blocking::Client;
 use rocket::http::Status;
 
 #[test]
-fn hello_world() {
+fn index_should_return_string_hello_world() {
     let client = Client::tracked(rocket()).expect("valid rocket instance");
-    let response = client.get(uri!(super::actions::hello)).dispatch();
+    let response = client.get(uri!(crate::controllers::calendars::index)).dispatch();
     assert_eq!(response.status(), Status::Ok);
     assert_eq!(response.into_string().unwrap(), "Hello, world!");
 }

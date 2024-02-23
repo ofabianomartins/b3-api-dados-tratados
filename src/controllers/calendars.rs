@@ -1,4 +1,4 @@
 #[get("/")]
-pub fn hello() -> &'static str {
+pub fn index() -> &'static str {
     "Hello, world!"
 }
