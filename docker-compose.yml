@@ -1,4 +1,4 @@
-version: '3.5'
+
 x-app-service-template: &main
     build:
       context: .
@@ -9,16 +9,22 @@ services:
   app:
     <<: *main
     env_file: ./env.development
+    depends_on:
+      - db
     ports:
       - 3000:3000
       - 5000:5000
   test:
     <<: *main
+    depends_on:
+      - db
     env_file: ./env.test
 
   db:
-    build: ./mysql/
+    build: ./postgres/
     container_name: ghostfoliodatadb
     restart: always
-    # volumes:|
-    #   - ./data:/var/lib/postgresql/data/
+    ports:
+      - 5432:5432
+    volumes:
+      - ./data:/var/lib/postgresql/

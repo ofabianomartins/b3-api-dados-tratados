@@ -9,4 +9,5 @@ publish = false
 rocket = "0.5.0"
 rocket_contrib = "0.4.11"
 rocket_codegen = "0.5.0"
-diesel = { version = "1.4.7", features = ["sqlite"] }
+diesel = { version = "2.1.0", features = ["postgres"] }
+diesel_cli = "2.1.1"
