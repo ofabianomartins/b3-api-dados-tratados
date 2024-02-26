@@ -14,3 +14,9 @@ rt:
 
 down:
 	docker-compose down
+
+psql:
+	docker exec -it ghostfoliodatadb psql -d ghostfoliodata_development
+
+psql_test:
+	docker exec -it ghostfoliodatadb psql -d ghostfoliodata_test
