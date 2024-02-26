@@ -48,3 +48,36 @@ fn test_get_calendars() {
         .expect("Failed to delete calendars");
 }
 
+#[test]
+fn test_post_calendars() {
+    // Setup: Insert sample data into the test database
+    
+    let connection = &mut establish_connection();
+
+    delete(calendars)
+        .execute(connection)
+        .expect("Failed to delete calendars");
+
+    // Setup: Define the data for the new calendar
+    let new_calendar = NewCalendar {
+        // Define the fields of the new calendar here
+        name: "Test Calendar",
+    };
+
+    // Action: Make a request to the route
+    let client = Client::tracked(rocket()).expect("valid rocket instance");
+    let response = client.post("/api/calendars")
+        .header(ContentType::JSON)
+        .body(json::to_string(&new_calendar).unwrap())
+        .dispatch();
+
+    // Assert: Check if the response contains the expected data
+    assert_eq!(response.status(), Status::Ok);
+    // assert_eq!(response.status(), Status::Created);
+
+
+    delete(calendars)
+        .execute(connection)
+        .expect("Failed to delete calendars");
+}
+

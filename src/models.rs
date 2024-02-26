@@ -15,7 +15,7 @@ pub struct Calendar {
     pub name: String,
 }
 
-#[derive(Debug, Insertable)]
+#[derive(Debug, Serialize, Deserialize, Insertable)]
 #[diesel(table_name = calendars)]
 pub struct NewCalendar<'a> {
     pub name: &'a str,

@@ -19,8 +19,13 @@ pub fn establish_connection() -> PgConnection {
 #[launch]
 fn rocket() -> Rocket<Build> {
     rocket::build()
-        .mount("/api", routes![controllers::main::index])
-        .mount("/api/calendars", routes![controllers::calendars::index])
+        .mount("/api", 
+            routes![
+                controllers::main::index,
+                controllers::calendars::index,
+                controllers::calendars::create
+            ]
+        )
 }
 
 #[cfg(test)]
