@@ -1,10 +1,26 @@
 #[macro_use] extern crate rocket;
 
+use rocket::Rocket;
+use rocket::Build;
+
+use diesel::prelude::*;
+use std::env;
+
 mod controllers;
+mod models;
+mod schema;
+
+pub fn establish_connection() -> PgConnection {
+    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    PgConnection::establish(&database_url)
+        .unwrap_or_else(|_| panic!("Error connecting to {}", database_url))
+}
 
 #[launch]
-fn rocket() -> _ {
-    rocket::build().mount("/", routes![controllers::calendars::index])
+fn rocket() -> Rocket<Build> {
+    rocket::build()
+        .mount("/api", routes![controllers::main::index])
+        .mount("/api/calendars", routes![controllers::calendars::index])
 }
 
 #[cfg(test)]
