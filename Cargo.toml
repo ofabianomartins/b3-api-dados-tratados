@@ -6,8 +6,8 @@ publish = false
 
 
 [dependencies]
-rocket = "0.5.0"
+rocket = { version = "0.5.0", features = ["json"]}
 rocket_contrib = "0.4.11"
 rocket_codegen = "0.5.0"
-diesel = { version = "2.1.0", features = ["postgres"] }
-diesel_cli = "2.1.1"
+diesel = { version = "2.1.0", features = ["postgres", "r2d2"] }
+serde = "1.0.197"
