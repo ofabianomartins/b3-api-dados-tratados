@@ -11,3 +11,4 @@ rocket_contrib = "0.4.11"
 rocket_codegen = "0.5.0"
 diesel = { version = "2.1.0", features = ["postgres", "r2d2"] }
 serde = "1.0.197"
+clippy = "0.0.302"
