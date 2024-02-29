@@ -23,7 +23,8 @@ fn rocket() -> Rocket<Build> {
             routes![
                 controllers::main::index,
                 controllers::calendars::index,
-                controllers::calendars::create
+                controllers::calendars::create,
+                controllers::holidays::index
             ]
         )
 }

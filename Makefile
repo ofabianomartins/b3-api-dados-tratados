@@ -15,6 +15,9 @@ rt:
 down:
 	docker-compose down
 
+test:
+	cargo test -- --test-threads=1
+
 psql:
 	docker exec -it ghostfoliodatadb psql -d ghostfoliodata_development
 

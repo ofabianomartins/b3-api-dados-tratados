@@ -7,6 +7,7 @@ use diesel::Insertable;
 use serde::Serialize;
 use serde::Deserialize;
 use std::fmt::Debug;
+use chrono::NaiveDate;
 
 #[derive(Debug, Queryable, Selectable, Identifiable, Serialize, Deserialize)]
 #[diesel(table_name = calendars)]
@@ -30,6 +31,7 @@ pub struct NewCalendar<'a> {
 pub struct Holiday {
     pub id: i32,
     pub name: String,
+    pub date: NaiveDate,
     pub calendar_id: i32,
 }
 
@@ -37,5 +39,6 @@ pub struct Holiday {
 #[diesel(table_name = holidays)]
 pub struct NewHoliday<'a> {
     pub name: &'a str,
+    pub date: NaiveDate,
     pub calendar_id: i32,
 }

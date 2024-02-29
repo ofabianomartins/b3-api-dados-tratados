@@ -9,6 +9,6 @@ publish = false
 rocket = { version = "0.5.0", features = ["json"]}
 rocket_contrib = "0.4.11"
 rocket_codegen = "0.5.0"
-diesel = { version = "2.1.0", features = ["postgres", "r2d2"] }
+diesel = { version = "2.1.0", features = ["postgres", "r2d2", "time", "chrono", "serde_json"] }
 serde = "1.0.197"
-clippy = "0.0.302"
+chrono = { version = "0.4.34", features = ["serde"] }

@@ -11,6 +11,7 @@ use diesel::delete;
 use crate::models::Calendar;
 use crate::models::NewCalendar;
 use crate::schema::calendars::dsl::*;
+use crate::schema::holidays::dsl::*;
 use crate::establish_connection;
 
 #[test]
@@ -18,6 +19,11 @@ fn test_get_calendars() {
     // Setup: Insert sample data into the test database
     
     let connection = &mut establish_connection();
+
+
+    delete(holidays)
+        .execute(connection)
+        .expect("Failed to delete calendars");
 
     delete(calendars)
         .execute(connection)
@@ -43,6 +49,10 @@ fn test_get_calendars() {
     let calendars_list: Vec<Calendar> = json::from_str(&test).expect("Failed to read JSON");
     assert_eq!(calendars_list.len(), 1); // Expecting three calendars in the response
     
+    delete(holidays)
+        .execute(connection)
+        .expect("Failed to delete calendars");
+    
     delete(calendars)
         .execute(connection)
         .expect("Failed to delete calendars");
@@ -53,6 +63,10 @@ fn test_post_calendars() {
     // Setup: Insert sample data into the test database
     
     let connection = &mut establish_connection();
+
+    delete(holidays)
+        .execute(connection)
+        .expect("Failed to delete calendars");
 
     delete(calendars)
         .execute(connection)
@@ -75,6 +89,11 @@ fn test_post_calendars() {
     // Assert: Check if the response contains the expected data
     assert_eq!(response.status(), Status::Ok);
     // assert_eq!(response.status(), Status::Created);
+
+
+    delete(holidays)
+        .execute(connection)
+        .expect("Failed to delete calendars");
 
     delete(calendars)
         .execute(connection)
