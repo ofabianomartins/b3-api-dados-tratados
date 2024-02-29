@@ -23,7 +23,7 @@ fn test_get_calendars() {
         .execute(connection)
         .expect("Failed to delete calendars");
 
-    let calendar = NewCalendar { name: "Calendar 2" };
+    let calendar = NewCalendar { name: "Calendar 2", code: "test_calendar2" };
     insert_into(calendars)
         .values(&calendar)
         .returning(Calendar::as_returning())
@@ -62,6 +62,7 @@ fn test_post_calendars() {
     let new_calendar = NewCalendar {
         // Define the fields of the new calendar here
         name: "Test Calendar",
+        code: "test_calendar",
     };
 
     // Action: Make a request to the route
@@ -74,7 +75,6 @@ fn test_post_calendars() {
     // Assert: Check if the response contains the expected data
     assert_eq!(response.status(), Status::Ok);
     // assert_eq!(response.status(), Status::Created);
-
 
     delete(calendars)
         .execute(connection)

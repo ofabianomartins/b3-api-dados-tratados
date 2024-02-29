@@ -1,4 +1,5 @@
 use crate::schema::calendars;
+use crate::schema::holidays;
 use diesel::Queryable;
 use diesel::Selectable;
 use diesel::Identifiable;
@@ -13,10 +14,28 @@ use std::fmt::Debug;
 pub struct Calendar {
     pub id: i32,
     pub name: String,
+    pub code: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, Insertable)]
 #[diesel(table_name = calendars)]
 pub struct NewCalendar<'a> {
     pub name: &'a str,
+    pub code: &'a str,
+}
+
+#[derive(Debug, Queryable, Selectable, Identifiable, Serialize, Deserialize)]
+#[diesel(table_name = holidays)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct Holiday {
+    pub id: i32,
+    pub name: String,
+    pub calendar_id: i32,
+}
+
+#[derive(Debug, Serialize, Deserialize, Insertable)]
+#[diesel(table_name = holidays)]
+pub struct NewHoliday<'a> {
+    pub name: &'a str,
+    pub calendar_id: i32,
 }
