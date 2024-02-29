@@ -4,6 +4,7 @@ diesel::table! {
     calendars (id) {
         id -> Int4,
         name -> Varchar,
+        code -> Varchar,
         uuid -> Uuid,
         created_at -> Timestamptz,
         updated_at -> Timestamptz,
@@ -78,12 +79,38 @@ diesel::table! {
 }
 
 diesel::table! {
+    theory_portfolio_transactions (id) {
+        id -> Int4,
+        date -> Date,
+        quantity -> Numeric,
+        uuid -> Uuid,
+        ticker_id -> Int4,
+        theory_portfolio_id -> Int4,
+        created_at -> Timestamptz,
+        updated_at -> Timestamptz,
+    }
+}
+
+diesel::table! {
+    theory_portfolios (id) {
+        id -> Int4,
+        name -> Varchar,
+        uuid -> Uuid,
+        index_id -> Int4,
+        created_at -> Timestamptz,
+        updated_at -> Timestamptz,
+    }
+}
+
+diesel::table! {
     tickers (id) {
         id -> Int4,
         name -> Varchar,
         security_type -> Varchar,
         uuid -> Uuid,
         company_id -> Int4,
+        calendar_id -> Int4,
+        currency_id -> Int4,
         created_at -> Timestamptz,
         updated_at -> Timestamptz,
     }
@@ -91,7 +118,12 @@ diesel::table! {
 
 diesel::joinable!(holidays -> calendars (calendar_id));
 diesel::joinable!(quotes -> tickers (ticker_id));
+diesel::joinable!(theory_portfolio_transactions -> theory_portfolios (theory_portfolio_id));
+diesel::joinable!(theory_portfolio_transactions -> tickers (ticker_id));
+diesel::joinable!(theory_portfolios -> tickers (index_id));
+diesel::joinable!(tickers -> calendars (calendar_id));
 diesel::joinable!(tickers -> companies (company_id));
+diesel::joinable!(tickers -> currencies (calendar_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     calendars,
@@ -99,5 +131,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     currencies,
     holidays,
     quotes,
+    theory_portfolio_transactions,
+    theory_portfolios,
     tickers,
 );
