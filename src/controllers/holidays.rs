@@ -1,10 +1,12 @@
 use rocket::get;
+use rocket::response::status::NoContent;
 use rocket::serde::json::Json;
 
 use diesel::SelectableHelper;
 use diesel::RunQueryDsl;
 use diesel::query_dsl::QueryDsl;
 use diesel::insert_into;
+use diesel::delete;
 
 use crate::establish_connection;
 use crate::models::Holiday;
@@ -19,6 +21,15 @@ pub fn index() -> Json<Vec<Holiday>> {
         .load(conn)
         .expect("Error loading holidays");
     return Json(results);
+}
+
+#[delete("/holidays/<holiday_id>")]
+pub fn destroy(holiday_id: i32) -> NoContent {
+    let conn = &mut establish_connection();
+    delete(holidays.find(holiday_id))
+        .execute(conn)
+        .expect("Error loading holidays");
+    return NoContent;
 }
 
 #[derive(Responder)]

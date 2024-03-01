@@ -73,6 +73,62 @@ fn test_get_holidays() {
 }
 
 #[test]
+fn test_delete_holiday() {
+    // Setup: Insert sample data into the test database
+    let conn = &mut establish_connection();
+
+    delete(holidays)
+        .execute(conn)
+        .expect("Failed to delete calendars");
+
+    delete(calendars)
+        .execute(conn)
+        .expect("Failed to delete calendars");
+
+    let new_calendar = NewCalendar { name: "Calendar 3", code: "calendar3" };
+    let result_calendar = insert_into(calendars)
+        .values(&new_calendar)
+        .returning(Calendar::as_returning())
+        .get_result(conn)
+        .expect("Failed to insert sample data into the database");
+
+
+    let new_holiday = NewHoliday { 
+        name: "Holiday 3",
+        date: NaiveDate::parse_from_str("2024-02-03", "%Y-%m-%d").unwrap(),
+        calendar_id: result_calendar.id
+    };
+    let result_holiday = insert_into(holidays)
+        .values(&new_holiday)
+        .returning(Holiday::as_returning())
+        .get_result(conn)
+        .expect("Failed to insert sample data into the database");
+
+    // Action: Make a request to the route
+    let client = Client::tracked(rocket()).expect("valid rocket instance");
+    let response = client.delete(format!("/api/holidays/{}", result_holiday.id ))
+        .header(ContentType::JSON)
+        .dispatch();
+
+    let result = holidays
+        .find(result_holiday.id)
+        .select(Holiday::as_select())
+        .load(conn)
+        .expect("Error loading calendars");
+
+    // Assert: Check if the response contains the expected data
+    assert_eq!(response.status(), Status::NoContent);
+    assert_eq!(result.len(), 0); // Expecting three calendars in the response
+
+    delete(holidays)
+        .execute(conn)
+        .expect("Failed to delete calendars");
+    delete(calendars)
+        .execute(conn)
+        .expect("Failed to delete calendars");
+}
+
+#[test]
 fn test_post_holidays() {
     // Setup: Insert sample data into the test database
     
