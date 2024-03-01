@@ -87,7 +87,7 @@ fn test_post_calendars() {
         .dispatch();
 
     // Assert: Check if the response contains the expected data
-    assert_eq!(response.status(), Status::Ok);
+    assert_eq!(response.status(), Status::Created);
     // assert_eq!(response.status(), Status::Created);
 
 

@@ -21,8 +21,12 @@ pub fn index() -> Json<Vec<Calendar>> {
     return Json(results);
 }
 
+#[derive(Responder)]
+#[response(status = 201, content_type = "json")]
+pub struct CreatedJson(Json<Calendar>);
+
 #[post("/calendars", format="json", data = "<new_calendar>")]
-pub async fn create(new_calendar: Json<NewCalendar<'_>>) -> Json<Calendar> {
+pub async fn create(new_calendar: Json<NewCalendar<'_>>) -> CreatedJson {
     let conn = &mut establish_connection();
     let result = insert_into(calendars)
         .values(&*new_calendar)
@@ -30,6 +34,6 @@ pub async fn create(new_calendar: Json<NewCalendar<'_>>) -> Json<Calendar> {
         .get_result(conn)
         .expect("Failed to insert sample data into the database");
 
-    return Json(result);
+    return CreatedJson(Json(result));
 }
 
