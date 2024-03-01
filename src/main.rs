@@ -24,8 +24,12 @@ fn rocket() -> Rocket<Build> {
                 controllers::main::index,
                 controllers::calendars::index,
                 controllers::calendars::create,
+                controllers::calendars::destroy,
                 controllers::holidays::index,
-                controllers::holidays::create
+                controllers::holidays::create,
+                controllers::currencies::index,
+                controllers::currencies::create,
+                controllers::currencies::destroy
             ]
         )
 }

@@ -9,24 +9,24 @@ use diesel::insert_into;
 use diesel::delete;
 
 use crate::establish_connection;
-use crate::models::Calendar;
-use crate::models::NewCalendar;
-use crate::schema::calendars::dsl::*;
+use crate::models::Currency;
+use crate::models::NewCurrency;
+use crate::schema::currencies::dsl::*;
 
-#[get("/calendars")]
-pub fn index() -> Json<Vec<Calendar>> {
+#[get("/currencies")]
+pub fn index() -> Json<Vec<Currency>> {
     let conn = &mut establish_connection();
-    let results = calendars
-        .select(Calendar::as_select())
+    let results = currencies
+        .select(Currency::as_select())
         .load(conn)
         .expect("Error loading calendars");
     return Json(results);
 }
 
-#[delete("/calendars/<calendar_id>")]
-pub fn destroy(calendar_id: i32) -> NoContent {
+#[delete("/currencies/<currency_id>")]
+pub fn destroy(currency_id: i32) -> NoContent {
     let conn = &mut establish_connection();
-    delete(calendars.find(calendar_id))
+    delete(currencies.find(currency_id))
         .execute(conn)
         .expect("Error loading calendars");
     return NoContent;
@@ -34,14 +34,14 @@ pub fn destroy(calendar_id: i32) -> NoContent {
 
 #[derive(Responder)]
 #[response(status = 201, content_type = "json")]
-pub struct CreatedJson(Json<Calendar>);
+pub struct CreatedJson(Json<Currency>);
 
-#[post("/calendars", format="json", data = "<new_calendar>")]
-pub async fn create(new_calendar: Json<NewCalendar<'_>>) -> CreatedJson {
+#[post("/currencies", format="json", data = "<new_currency>")]
+pub async fn create(new_currency: Json<NewCurrency<'_>>) -> CreatedJson {
     let conn = &mut establish_connection();
-    let result = insert_into(calendars)
-        .values(&*new_calendar)
-        .returning(Calendar::as_returning())
+    let result = insert_into(currencies)
+        .values(&*new_currency)
+        .returning(Currency::as_returning())
         .get_result(conn)
         .expect("Failed to insert sample data into the database");
 

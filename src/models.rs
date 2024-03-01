@@ -1,5 +1,6 @@
 use crate::schema::calendars;
 use crate::schema::holidays;
+use crate::schema::currencies;
 use diesel::Queryable;
 use diesel::Selectable;
 use diesel::Identifiable;
@@ -41,4 +42,20 @@ pub struct NewHoliday<'a> {
     pub name: &'a str,
     pub date: NaiveDate,
     pub calendar_id: i32,
+}
+
+#[derive(Debug, Queryable, Selectable, Identifiable, Serialize, Deserialize)]
+#[diesel(table_name = currencies)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct Currency {
+    pub id: i32,
+    pub name: String,
+    pub code: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Insertable)]
+#[diesel(table_name = currencies)]
+pub struct NewCurrency<'a> {
+    pub name: &'a str,
+    pub code: &'a str,
 }
