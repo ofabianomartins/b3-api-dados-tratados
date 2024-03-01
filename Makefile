@@ -16,6 +16,7 @@ down:
 	docker-compose down
 
 test:
+	export DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/ghostfoliodata_test
 	cargo test -- --test-threads=1
 
 psql:

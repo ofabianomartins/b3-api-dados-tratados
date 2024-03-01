@@ -2,7 +2,7 @@
 
 CREATE TABLE IF NOT EXISTS public.tickers(
   id SERIAL PRIMARY KEY, 
-  name VARCHAR NOT NULL UNIQUE,
+  symbol VARCHAR NOT NULL UNIQUE,
   security_type VARCHAR NOT NULL,
   uuid UUID NOT NULL DEFAULT uuid_generate_v4(),
   company_id SERIAL NOT NULL,

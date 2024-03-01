@@ -22,6 +22,9 @@ fn rocket() -> Rocket<Build> {
         .mount("/api", 
             routes![
                 controllers::main::index,
+                controllers::tickers::index,
+                controllers::tickers::create,
+                controllers::tickers::destroy,
                 controllers::calendars::index,
                 controllers::calendars::create,
                 controllers::calendars::destroy,

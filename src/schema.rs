@@ -105,7 +105,7 @@ diesel::table! {
 diesel::table! {
     tickers (id) {
         id -> Int4,
-        name -> Varchar,
+        symbol -> Varchar,
         security_type -> Varchar,
         uuid -> Uuid,
         company_id -> Int4,
