@@ -16,8 +16,8 @@ use crate::schema::quotes::dsl::*;
 #[get("/quotes")]
 pub fn index() -> Json<Vec<Quote>> {
     let conn = &mut establish_connection();
-    let results = tickers
-        .select(Ticker::as_select())
+    let results = quotes
+        .select(Quote::as_select())
         .load(conn)
         .expect("Error loading tickers");
     return Json(results);
@@ -37,7 +37,7 @@ pub fn destroy(quote_id: i32) -> NoContent {
 pub struct CreatedJson(Json<Quote>);
 
 #[post("/quotes", format="json", data = "<new_quote>")]
-pub async fn create(new_quote: Json<NewQuote<'_>>) -> CreatedJson {
+pub async fn create(new_quote: Json<NewQuote>) -> CreatedJson {
     let conn = &mut establish_connection();
     let result = insert_into(quotes)
         .values(&*new_quote)

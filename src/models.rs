@@ -141,3 +141,41 @@ pub struct NewQuote {
 	pub daily_factor: BigDecimal,
 	pub accumulated_factor: BigDecimal,
 }
+
+#[derive(Debug, Queryable, Selectable, Identifiable, Serialize, Deserialize)]
+#[diesel(table_name = theory_portfolios)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct TheoryPortfolio {
+    pub id: i32,
+    pub name: String,
+    pub index_id: i32,
+}
+
+#[derive(Debug, Serialize, Deserialize, Insertable)]
+#[diesel(table_name = theory_portfolios)]
+pub struct NewTheoryPortfolio {
+    pub name: String,
+    pub index_id: i32,
+}
+
+#[derive(Debug, Queryable, Selectable, Identifiable, Serialize, Deserialize)]
+#[diesel(table_name = theory_portfolio_transactions)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct TheoryPortfolioTransaction {
+    pub id: i32,
+    pub date: NaiveDate,
+    pub quantity: BigDecimal,
+    pub ticker_id: i32,
+    pub theory_portfolio_id: i32,
+}
+
+#[derive(Debug, Serialize, Deserialize, Insertable)]
+#[diesel(table_name = theory_portfolio_transactions)]
+pub struct NewTheoryPortfolioTransaction {
+    pub date: NaiveDate,
+    pub quantity: BigDecimal,
+    pub ticker_id: i32,
+    pub theory_portfolio_id: i32,
+}
+
+
