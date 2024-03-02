@@ -9,14 +9,14 @@ use diesel::query_dsl::QueryDsl;
 use diesel::insert_into;
 use diesel::delete;
 
-use crate::connections::establish_connection;
+use crate::connections::db_connection;
 use crate::models::Ticker;
 use crate::models::NewTicker;
 use crate::schema::tickers::dsl::*;
 
 #[get("/tickers")]
 pub fn index() -> Json<Vec<Ticker>> {
-    let conn = &mut establish_connection();
+    let conn = &mut db_connection();
     let results = tickers
         .select(Ticker::as_select())
         .load(conn)
@@ -26,7 +26,7 @@ pub fn index() -> Json<Vec<Ticker>> {
 
 #[delete("/tickers/<ticker_id>")]
 pub fn destroy(ticker_id: i32) -> NoContent {
-    let conn = &mut establish_connection();
+    let conn = &mut db_connection();
     delete(tickers.find(ticker_id))
         .execute(conn)
         .expect("Error loading tickers");
@@ -39,7 +39,7 @@ pub struct CreatedJson(Json<Ticker>);
 
 #[post("/tickers", format="json", data = "<new_ticker>")]
 pub async fn create(new_ticker: Json<NewTicker<'_>>) -> CreatedJson {
-    let conn = &mut establish_connection();
+    let conn = &mut db_connection();
     let result = insert_into(tickers)
         .values(&*new_ticker)
         .returning(Ticker::as_returning())

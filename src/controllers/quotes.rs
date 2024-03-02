@@ -16,14 +16,14 @@ use std::fmt::Debug;
 use chrono::NaiveDate;
 use bigdecimal::BigDecimal;
 
-use crate::connections::establish_connection;
+use crate::connections::db_connection;
 use crate::models::Quote;
 // use crate::models::NewQuote;
 use crate::schema::quotes::dsl::*;
 
 #[get("/quotes")]
 pub fn index() -> Json<Vec<Quote>> {
-    let conn = &mut establish_connection();
+    let conn = &mut db_connection();
     let results = quotes
         .select(Quote::as_select())
         .load(conn)
@@ -33,7 +33,7 @@ pub fn index() -> Json<Vec<Quote>> {
 
 #[delete("/quotes/<quote_id>")]
 pub fn destroy(quote_id: i32) -> NoContent {
-    let conn = &mut establish_connection();
+    let conn = &mut db_connection();
     delete(quotes.find(quote_id))
         .execute(conn)
         .expect("Error loading quotes");
@@ -65,7 +65,7 @@ pub struct CreateParams {
 pub async fn create() -> &'static str {
     return "TODO: Implement backgroung insert"
 // pub async fn create(quote_params: Json<CreateParams>) -> CreatedJson {
-//    let conn = &mut establish_connection();
+//    let conn = &mut db_connection();
 //    let result = insert_into(quotes)
 //        .values(&*new_quote)
 //        .returning(Quote::as_returning())

@@ -8,14 +8,14 @@ use diesel::query_dsl::QueryDsl;
 use diesel::insert_into;
 use diesel::delete;
 
-use crate::connections::establish_connection;
+use crate::connections::db_connection;
 use crate::models::TheoryPortfolioTransaction;
 use crate::models::NewTheoryPortfolioTransaction;
 use crate::schema::theory_portfolio_transactions::dsl::*;
 
 #[get("/theory_portfolio_transactions")]
 pub fn index() -> Json<Vec<TheoryPortfolioTransaction>> {
-    let conn = &mut establish_connection();
+    let conn = &mut db_connection();
     let results = theory_portfolio_transactions
         .select(TheoryPortfolioTransaction::as_select())
         .load(conn)
@@ -25,7 +25,7 @@ pub fn index() -> Json<Vec<TheoryPortfolioTransaction>> {
 
 #[delete("/theory_portfolio_transactions/<theory_portfolio_transaction_id>")]
 pub fn destroy(theory_portfolio_transaction_id: i32) -> NoContent {
-    let conn = &mut establish_connection();
+    let conn = &mut db_connection();
     delete(theory_portfolio_transactions.find(theory_portfolio_transaction_id))
         .execute(conn)
         .expect("Error loading theory_portfolio_transactions");
@@ -38,7 +38,7 @@ pub struct CreatedJson(Json<TheoryPortfolioTransaction>);
 
 #[post("/theory_portfolio_transactions", format="json", data = "<new_theory_portfolio_transaction>")]
 pub async fn create(new_theory_portfolio_transaction: Json<NewTheoryPortfolioTransaction>) -> CreatedJson {
-    let conn = &mut establish_connection();
+    let conn = &mut db_connection();
     let result = insert_into(theory_portfolio_transactions)
         .values(&*new_theory_portfolio_transaction)
         .returning(TheoryPortfolioTransaction::as_returning())

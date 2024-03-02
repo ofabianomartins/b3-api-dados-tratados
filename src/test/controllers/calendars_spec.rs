@@ -12,13 +12,13 @@ use crate::models::Calendar;
 use crate::models::NewCalendar;
 use crate::schema::calendars::dsl::*;
 use crate::schema::holidays::dsl::*;
-use crate::connections::establish_connection;
+use crate::connections::db_connection;
 
 #[test]
 fn test_get_calendars() {
     // Setup: Insert sample data into the test database
     
-    let connection = &mut establish_connection();
+    let connection = &mut db_connection();
     
     delete(calendars)
         .execute(connection)
@@ -53,7 +53,7 @@ fn test_get_calendars() {
 fn test_delete_calendar() {
     // Setup: Insert sample data into the test database
     
-    let conn = &mut establish_connection();
+    let conn = &mut db_connection();
 
     delete(calendars)
         .execute(conn)
@@ -91,7 +91,7 @@ fn test_delete_calendar() {
 fn test_post_calendars() {
     // Setup: Insert sample data into the test database
     
-    let connection = &mut establish_connection();
+    let connection = &mut db_connection();
 
     delete(holidays)
         .execute(connection)

@@ -11,11 +11,11 @@ use diesel::delete;
 use crate::models::Currency;
 use crate::models::NewCurrency;
 use crate::schema::currencies::dsl::*;
-use crate::connections::establish_connection;
+use crate::connections::db_connection;
 
 #[test]
 fn test_get_currencies() {
-    let connection = &mut establish_connection();
+    let connection = &mut db_connection();
 
     delete(currencies)
         .execute(connection)
@@ -50,7 +50,7 @@ fn test_get_currencies() {
 fn test_delete_currency() {
     // Setup: Insert sample data into the test database
     
-    let connection = &mut establish_connection();
+    let connection = &mut db_connection();
 
     delete(currencies)
         .execute(connection)
@@ -86,7 +86,7 @@ fn test_delete_currency() {
 
 #[test]
 fn test_post_currencies() {
-    let connection = &mut establish_connection();
+    let connection = &mut db_connection();
 
     delete(currencies)
         .execute(connection)

@@ -10,7 +10,7 @@ use diesel::delete;
 
 use chrono::NaiveDate;
 
-use crate::connections::establish_connection;
+use crate::connections::db_connection;
 use crate::models::Holiday;
 use crate::models::NewHoliday;
 use crate::schema::holidays::dsl::*;
@@ -22,7 +22,7 @@ use crate::schema::calendars::dsl::*;
 #[test]
 fn test_get_holidays() {
     // Setup: Insert sample data into the test database
-    let connection = &mut establish_connection();
+    let connection = &mut db_connection();
 
     delete(holidays)
         .execute(connection)
@@ -75,7 +75,7 @@ fn test_get_holidays() {
 #[test]
 fn test_delete_holiday() {
     // Setup: Insert sample data into the test database
-    let conn = &mut establish_connection();
+    let conn = &mut db_connection();
 
     delete(holidays)
         .execute(conn)
@@ -132,7 +132,7 @@ fn test_delete_holiday() {
 fn test_post_holidays() {
     // Setup: Insert sample data into the test database
     
-    let connection = &mut establish_connection();
+    let connection = &mut db_connection();
 
     delete(calendars)
         .execute(connection)

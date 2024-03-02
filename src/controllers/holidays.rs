@@ -8,14 +8,14 @@ use diesel::query_dsl::QueryDsl;
 use diesel::insert_into;
 use diesel::delete;
 
-use crate::connections::establish_connection;
+use crate::connections::db_connection;
 use crate::models::Holiday;
 use crate::models::NewHoliday;
 use crate::schema::holidays::dsl::*;
 
 #[get("/holidays")]
 pub fn index() -> Json<Vec<Holiday>> {
-    let conn = &mut establish_connection();
+    let conn = &mut db_connection();
     let results = holidays
         .select(Holiday::as_select())
         .load(conn)
@@ -25,7 +25,7 @@ pub fn index() -> Json<Vec<Holiday>> {
 
 #[delete("/holidays/<holiday_id>")]
 pub fn destroy(holiday_id: i32) -> NoContent {
-    let conn = &mut establish_connection();
+    let conn = &mut db_connection();
     delete(holidays.find(holiday_id))
         .execute(conn)
         .expect("Error loading holidays");
@@ -38,7 +38,7 @@ pub struct CreatedJson(Json<Holiday>);
 
 #[post("/holidays", format="json", data = "<new_holiday>")]
 pub fn create(new_holiday: Json<NewHoliday<'_>>) -> CreatedJson {
-    let conn = &mut establish_connection();
+    let conn = &mut db_connection();
     let result = insert_into(holidays)
         .values(&*new_holiday)
         .returning(Holiday::as_returning())

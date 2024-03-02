@@ -8,14 +8,14 @@ use diesel::query_dsl::QueryDsl;
 use diesel::insert_into;
 use diesel::delete;
 
-use crate::connections::establish_connection;
+use crate::connections::db_connection;
 use crate::models::TheoryPortfolio;
 use crate::models::NewTheoryPortfolio;
 use crate::schema::theory_portfolios::dsl::*;
 
 #[get("/theory_portfolios")]
 pub fn index() -> Json<Vec<TheoryPortfolio>> {
-    let conn = &mut establish_connection();
+    let conn = &mut db_connection();
     let results = theory_portfolios
         .select(TheoryPortfolio::as_select())
         .load(conn)
@@ -25,7 +25,7 @@ pub fn index() -> Json<Vec<TheoryPortfolio>> {
 
 #[delete("/theory_portfolios/<theory_portfolio_id>")]
 pub fn destroy(theory_portfolio_id: i32) -> NoContent {
-    let conn = &mut establish_connection();
+    let conn = &mut db_connection();
     delete(theory_portfolios.find(theory_portfolio_id))
         .execute(conn)
         .expect("Error loading theory_portfolios");
@@ -38,7 +38,7 @@ pub struct CreatedJson(Json<TheoryPortfolio>);
 
 #[post("/theory_portfolios", format="json", data = "<new_theory_portfolio>")]
 pub async fn create(new_theory_portfolio: Json<NewTheoryPortfolio>) -> CreatedJson {
-    let conn = &mut establish_connection();
+    let conn = &mut db_connection();
     let result = insert_into(theory_portfolios)
         .values(&*new_theory_portfolio)
         .returning(TheoryPortfolio::as_returning())

@@ -8,14 +8,14 @@ use diesel::query_dsl::QueryDsl;
 use diesel::insert_into;
 use diesel::delete;
 
-use crate::connections::establish_connection;
+use crate::connections::db_connection;
 use crate::models::Currency;
 use crate::models::NewCurrency;
 use crate::schema::currencies::dsl::*;
 
 #[get("/currencies")]
 pub fn index() -> Json<Vec<Currency>> {
-    let conn = &mut establish_connection();
+    let conn = &mut db_connection();
     let results = currencies
         .select(Currency::as_select())
         .load(conn)
@@ -25,7 +25,7 @@ pub fn index() -> Json<Vec<Currency>> {
 
 #[delete("/currencies/<currency_id>")]
 pub fn destroy(currency_id: i32) -> NoContent {
-    let conn = &mut establish_connection();
+    let conn = &mut db_connection();
     delete(currencies.find(currency_id))
         .execute(conn)
         .expect("Error loading calendars");
@@ -38,7 +38,7 @@ pub struct CreatedJson(Json<Currency>);
 
 #[post("/currencies", format="json", data = "<new_currency>")]
 pub async fn create(new_currency: Json<NewCurrency<'_>>) -> CreatedJson {
-    let conn = &mut establish_connection();
+    let conn = &mut db_connection();
     let result = insert_into(currencies)
         .values(&*new_currency)
         .returning(Currency::as_returning())
