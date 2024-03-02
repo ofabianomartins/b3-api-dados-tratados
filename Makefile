@@ -1,23 +1,15 @@
 SHELL := /bin/bash # Use bash syntax
 
-build:
-	docker-compose build app test
-
 rs:
-	docker-compose run --rm --service-ports app
+	export DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/ghostfoliodata_development
+	cargo run --bin server
 
-dev:
-	docker-compose run --rm app bash
-
-rt:
-	docker-compose run --rm test bash
-
-down:
-	docker-compose down
+job:
+	export DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/ghostfoliodata_development
+	cargo run --bin job
 
 test:
-	export DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/ghostfoliodata_test
-	cargo test -- --test-threads=1
+	DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/ghostfoliodata_test cargo test -- --test-threads=1
 
 psql:
 	docker exec -it ghostfoliodatadb psql -d ghostfoliodata_development

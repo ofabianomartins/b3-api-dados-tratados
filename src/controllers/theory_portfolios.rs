@@ -8,7 +8,7 @@ use diesel::query_dsl::QueryDsl;
 use diesel::insert_into;
 use diesel::delete;
 
-use crate::establish_connection;
+use crate::connections::establish_connection;
 use crate::models::TheoryPortfolio;
 use crate::models::NewTheoryPortfolio;
 use crate::schema::theory_portfolios::dsl::*;

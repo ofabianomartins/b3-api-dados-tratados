@@ -12,7 +12,7 @@ use crate::models::Calendar;
 use crate::models::NewCalendar;
 use crate::schema::calendars::dsl::*;
 use crate::schema::holidays::dsl::*;
-use crate::establish_connection;
+use crate::connections::establish_connection;
 
 #[test]
 fn test_get_calendars() {

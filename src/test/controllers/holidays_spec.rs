@@ -10,7 +10,7 @@ use diesel::delete;
 
 use chrono::NaiveDate;
 
-use crate::establish_connection;
+use crate::connections::establish_connection;
 use crate::models::Holiday;
 use crate::models::NewHoliday;
 use crate::schema::holidays::dsl::*;

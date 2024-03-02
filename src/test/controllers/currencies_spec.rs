@@ -11,7 +11,7 @@ use diesel::delete;
 use crate::models::Currency;
 use crate::models::NewCurrency;
 use crate::schema::currencies::dsl::*;
-use crate::establish_connection;
+use crate::connections::establish_connection;
 
 #[test]
 fn test_get_currencies() {
