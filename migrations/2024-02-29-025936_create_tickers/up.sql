@@ -12,5 +12,5 @@ CREATE TABLE IF NOT EXISTS public.tickers(
   updated_at timestamp with time zone NOT NULL DEFAULT NOW(),
   CONSTRAINT fk_companies_tickers FOREIGN KEY(company_id) REFERENCES companies(id),
   CONSTRAINT fk_calendars_tickers FOREIGN KEY(calendar_id) REFERENCES calendars(id),
-  CONSTRAINT fk_currencies_tickers FOREIGN KEY(calendar_id) REFERENCES currencies(id)
+  CONSTRAINT fk_currencies_tickers FOREIGN KEY(currency_id) REFERENCES currencies(id)
 )
