@@ -123,7 +123,7 @@ diesel::joinable!(theory_portfolio_transactions -> tickers (ticker_id));
 diesel::joinable!(theory_portfolios -> tickers (index_id));
 diesel::joinable!(tickers -> calendars (calendar_id));
 diesel::joinable!(tickers -> companies (company_id));
-diesel::joinable!(tickers -> currencies (calendar_id));
+diesel::joinable!(tickers -> currencies (currency_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     calendars,

@@ -4,6 +4,13 @@ version = "0.1.0"
 edition = "2021"
 publish = false
 
+[[bin]]
+name = "server"
+path = "src/server.rs"
+
+[[bin]]
+name = "job"
+path = "src/job.rs"
 
 [dependencies]
 rocket = { version = "0.5.0", features = ["json"]}
@@ -14,4 +21,5 @@ serde = "1.0.197"
 chrono = { version = "0.4.34", features = ["serde"] }
 bigdecimal = { version = "0.4.2", features = ["serde"]} 
 uuid = { version = "1.7.0", features = ["serde"]} 
+redis = "0.24.0" 
 

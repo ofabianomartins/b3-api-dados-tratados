@@ -20,6 +20,12 @@ services:
       - db
     env_file: ./env.test
 
+  redis:
+    image: redis:7.0.4-alpine
+    container_name: ghostfoliodataredis
+    ports:
+      - 6379:6379
+
   db:
     build: ./postgres/
     container_name: ghostfoliodatadb

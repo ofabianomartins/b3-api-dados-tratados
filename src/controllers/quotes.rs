@@ -2,11 +2,13 @@ use rocket::get;
 use rocket::response::status::NoContent;
 use rocket::serde::json::Json;
 
+
 use diesel::SelectableHelper;
 use diesel::RunQueryDsl;
 use diesel::query_dsl::QueryDsl;
-//use diesel::insert_into;
 use diesel::delete;
+
+use redis::Commands;
 
 use serde::Serialize;
 use serde::Deserialize;
@@ -14,9 +16,12 @@ use serde::Deserialize;
 use std::fmt::Debug;
 
 use chrono::NaiveDate;
+use chrono::Utc;
+
 use bigdecimal::BigDecimal;
 
 use crate::connections::db_connection;
+use crate::connections::redis_connection;
 use crate::models::Quote;
 // use crate::models::NewQuote;
 use crate::schema::quotes::dsl::*;
@@ -60,18 +65,18 @@ pub struct CreateParams {
 	pub trades: Option<BigDecimal>,
 }
 
-//#[post("/quotes", format="json", data = "<quote_params>")]
-#[post("/quotes")]
-pub async fn create() -> &'static str {
-    return "TODO: Implement backgroung insert"
-// pub async fn create(quote_params: Json<CreateParams>) -> CreatedJson {
-//    let conn = &mut db_connection();
-//    let result = insert_into(quotes)
-//        .values(&*new_quote)
-//        .returning(Quote::as_returning())
-//        .get_result(conn)
-//        .expect("Failed to insert sample data into the database");
-//
-//    return CreatedJson(Json(result));
+//#[post("/quotes")]
+//pub async fn create(quote_params: Json<CreateParams>) -> &'static str {
+#[post("/quotes", format="json", data = "<quote_params>")]
+pub async fn create(quote_params: &str) -> &'static str {
+    let conn = &mut redis_connection();
+
+    let result: i32 = conn.zadd(
+        "quote_queue", 
+        quote_params.replace("\n", "").replace(" ", ""),
+        Utc::now().timestamp()
+    ).expect("ZADD failed!");
+
+    return "Send to be process!"
 }
 
