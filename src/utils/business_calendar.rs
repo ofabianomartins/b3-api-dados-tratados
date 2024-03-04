@@ -1,6 +1,8 @@
 use chrono::NaiveDate;
 use chrono::Datelike;
 use chrono::Weekday;
+use chrono::Duration;
+
 use std::collections::HashMap;
 
 pub struct BusinessCalendar {
@@ -14,15 +16,24 @@ pub struct BusinessCalendar {
 }
 
 impl BusinessCalendar {
-    pub fn is_holiday(date: NaiveDate, holidays: &Vec<String>) -> bool {
-        let str_date: String = date.format("%Y-%m-%d").to_string();
 
-        return date.weekday() == Weekday::Sat || date.weekday() == Weekday::Sun || holidays.contains(&str_date)
+    pub fn new(start_date_str: String, end_date_str: String, holidays: Vec<String>) -> Self {
+        let mut object = Self {
+            start_date: start_date_str.clone(),
+            end_date: end_date_str.clone(),
+            holidays: holidays.clone(),
+            business_dates: Vec::new(),
+            business_dates_index: HashMap::new(),
+            next_business_date_index: HashMap::new(),
+            prev_business_date_index: HashMap::new()
+        };
+
+        object.build(start_date_str, end_date_str, holidays);
+
+        return object;
     }
-}
 
-impl BusinessCalendar {
-    pub fn new(start_date_str: String, end_date_str: String, holidays: Vec<String>) -> BusinessCalendar {
+    pub fn build(&mut self, start_date_str: String, end_date_str: String, holidays: Vec<String>) {
         let mut start_date = NaiveDate::parse_from_str(&start_date_str, "%Y-%m-%d").unwrap();
         let mut end_date = NaiveDate::parse_from_str(&end_date_str, "%Y-%m-%d").unwrap();
 
@@ -33,79 +44,84 @@ impl BusinessCalendar {
             end_date = end_date.succ_opt().unwrap();
         }
 
-        let mut business_dates: Vec<String> = Vec::new();
-        let mut business_dates_index: HashMap<String, usize> = HashMap::new();
-        let mut next_business_date_index: HashMap<String, usize> = HashMap::new();
-        let mut prev_business_date_index: HashMap<String, usize> = HashMap::new();
+        self.business_dates.clear();
+        self.business_dates_index.clear();
+
+        for (key, value) in &self.business_dates_index {
+            println!("Item HashMap: {} - {}", key, value);
+        }
+        self.next_business_date_index.clear();
+        self.prev_business_date_index.clear();
 
         let mut i: usize = 0;
         let mut d = start_date.clone();
 
         while (end_date - d).num_days() >= 0 {
             if BusinessCalendar::is_holiday(d, &holidays) && i > 0{
-                next_business_date_index.insert(d.format("%Y-%m-%d").to_string(), i);
-                prev_business_date_index.insert(d.format("%Y-%m-%d").to_string(), i - 1);
+                self.next_business_date_index.insert(d.format("%Y-%m-%d").to_string(), i);
+                self.prev_business_date_index.insert(d.format("%Y-%m-%d").to_string(), i - 1);
             } else {
-                business_dates.push(d.format("%Y-%m-%d").to_string());
-                business_dates_index.insert(d.format("%Y-%m-%d").to_string(), i);
+                self.business_dates.push(d.format("%Y-%m-%d").to_string());
+                self.business_dates_index.insert(d.format("%Y-%m-%d").to_string(), i);
                 i = i + 1;
             }
 
             d = d.succ_opt().unwrap();
         }
-
-        BusinessCalendar {
-            start_date: start_date_str,
-            end_date: end_date_str,
-            holidays: holidays,
-            business_dates: business_dates,
-            business_dates_index: business_dates_index,
-            prev_business_date_index: prev_business_date_index,
-            next_business_date_index: next_business_date_index
-        }
+        self.start_date = start_date_str;
+        self.end_date = end_date_str;
+        self.holidays = holidays;
     }
 
-    fn is_holiday_date(&self, date: NaiveDate) -> bool {
-        return BusinessCalendar::is_holiday(date, &self.holidays)
+    pub fn is_holiday(date: NaiveDate, holidays: &Vec<String>) -> bool {
+        let str_date: String = date.format("%Y-%m-%d").to_string();
+
+        return date.weekday() == Weekday::Sat || date.weekday() == Weekday::Sun || holidays.contains(&str_date)
     }
 
-    fn range_check(&self, date: NaiveDate) {
+    fn range_check(&mut self, date: NaiveDate) {
         let start_date_obj = NaiveDate::parse_from_str(&self.start_date, "%Y-%m-%d").unwrap();
         let end_date_obj = NaiveDate::parse_from_str(&self.end_date, "%Y-%m-%d").unwrap();
         if (date - start_date_obj).num_days() < 0 {
             // puts "Reconstruindo calculadora de feriados pois dia #{date} eh menor que #{@start_date} -> #{@end_date}"
-            // build(date - 2.days, @end_date, @holidays)
+            let new_start_date_str = date.pred_opt().unwrap().format("%Y-%m-%d").to_string();
+            self.build(new_start_date_str, self.end_date.clone(), self.holidays.clone());
         } else if (date - end_date_obj).num_days() > 0 {
             // puts "Reconstruindo calculadora de feriados pois dia #{date} eh maior que #{end_date}"
-            // build(@start_date, date + 252.days, @holidays)
+            let new_end_date_str = date.pred_opt().unwrap().format("%Y-%m-%d").to_string();
+            self.build(self.start_date.clone(), new_end_date_str, self.holidays.clone());
         }
     }
 
-    fn adjust(&self, date: NaiveDate) -> String {
+    fn adjust(&mut self, date: NaiveDate) -> String {
         self.range_check(date);
         let date_str: String = date.format("%Y-%m-%d").to_string();
         if !BusinessCalendar::is_holiday(date, &self.holidays) {
             return date_str;
         } else {
-            println!("{}", date_str);
-            println!("{}", *self.next_business_date_index.get(&date_str).unwrap());
-            println!("{}", self.business_dates[*self.next_business_date_index.get(&date_str).unwrap()]);
             return self.business_dates[*self.next_business_date_index.get(&date_str).unwrap()].clone();
         }
     }
     
-    fn adjusted_date_index(&self, date: NaiveDate) -> usize {
-        println!("{}", self.adjust(date));
-        return *self.business_dates_index.get(&self.adjust(date)).unwrap();
+    fn adjusted_date_index(&mut self, date: NaiveDate) -> &usize {
+        let date_str: String = self.adjust(date).clone();
+        return self.business_dates_index.get(&date_str).unwrap();
     }
 
-    pub fn advance(&self, date: NaiveDate, n: usize) -> String {
-        &self.range_check(date);
-        let index: usize = self.adjusted_date_index(date) + n;
+    pub fn advance(&mut self, date: NaiveDate, n: i64) -> String {
+        self.range_check(date);
+        let index: i64 = *self.adjusted_date_index(date) as i64 + n;
         if index < 0 {
-//              build(date + (index - margin).days, @end_date, @holidays)
-//            return self.advance(date, n)
+            let previous_date = date + Duration::days(n - 252);
+            let new_start_date_str = previous_date.pred_opt().unwrap().format("%Y-%m-%d").to_string();
+            self.build(new_start_date_str, self.end_date.clone(), self.holidays.clone());
+            return self.advance(date, n)
+        } else if index as usize >= self.business_dates.len() {
+            let next_date = date + Duration::days(n + 252);
+            let new_end_date_str = next_date.succ_opt().unwrap().format("%Y-%m-%d").to_string();
+            self.build(self.start_date.clone(), new_end_date_str, self.holidays.clone());
+            return self.advance(date, n)
         }
-        return self.business_dates[self.adjusted_date_index(date) + n].clone();
+        return self.business_dates[index as usize].clone();
     }
 }
