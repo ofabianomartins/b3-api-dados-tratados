@@ -91,7 +91,7 @@ impl BusinessCalendar {
         }
     }
 
-    fn adjust(&mut self, date: NaiveDate) -> String {
+    pub fn adjust(&mut self, date: NaiveDate) -> String {
         self.range_check(date);
         let date_str: String = date.format("%Y-%m-%d").to_string();
         if !BusinessCalendar::is_holiday(date, &self.holidays) {
