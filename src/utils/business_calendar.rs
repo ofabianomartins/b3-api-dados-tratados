@@ -47,9 +47,6 @@ impl BusinessCalendar {
         self.business_dates.clear();
         self.business_dates_index.clear();
 
-        for (key, value) in &self.business_dates_index {
-            println!("Item HashMap: {} - {}", key, value);
-        }
         self.next_business_date_index.clear();
         self.prev_business_date_index.clear();
 
@@ -68,6 +65,7 @@ impl BusinessCalendar {
 
             d = d.succ_opt().unwrap();
         }
+
         self.start_date = start_date_str;
         self.end_date = end_date_str;
         self.holidays = holidays;
@@ -86,7 +84,7 @@ impl BusinessCalendar {
             // puts "Reconstruindo calculadora de feriados pois dia #{date} eh menor que #{@start_date} -> #{@end_date}"
             let new_start_date_str = date.pred_opt().unwrap().format("%Y-%m-%d").to_string();
             self.build(new_start_date_str, self.end_date.clone(), self.holidays.clone());
-        } else if (date - end_date_obj).num_days() > 0 {
+        } else if (end_date_obj - date ).num_days() < 0 {
             // puts "Reconstruindo calculadora de feriados pois dia #{date} eh maior que #{end_date}"
             let new_end_date_str = date.pred_opt().unwrap().format("%Y-%m-%d").to_string();
             self.build(self.start_date.clone(), new_end_date_str, self.holidays.clone());
@@ -112,12 +110,14 @@ impl BusinessCalendar {
         self.range_check(date);
         let index: i64 = *self.adjusted_date_index(date) as i64 + n;
         if index < 0 {
-            let previous_date = date + Duration::days(n - 252);
+            let start_date_obj = NaiveDate::parse_from_str(&self.start_date, "%Y-%m-%d").unwrap();
+            let previous_date = start_date_obj + Duration::days(n - 365);
             let new_start_date_str = previous_date.pred_opt().unwrap().format("%Y-%m-%d").to_string();
             self.build(new_start_date_str, self.end_date.clone(), self.holidays.clone());
             return self.advance(date, n)
         } else if index as usize >= self.business_dates.len() {
-            let next_date = date + Duration::days(n + 252);
+            let end_date_obj = NaiveDate::parse_from_str(&self.end_date, "%Y-%m-%d").unwrap();
+            let next_date = end_date_obj + Duration::days(n + 365);
             let new_end_date_str = next_date.succ_opt().unwrap().format("%Y-%m-%d").to_string();
             self.build(self.start_date.clone(), new_end_date_str, self.holidays.clone());
             return self.advance(date, n)
