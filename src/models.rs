@@ -11,6 +11,8 @@ use std::fmt::Debug;
 use chrono::NaiveDate;
 use bigdecimal::BigDecimal;
 
+use uuid::Uuid;
+
 use crate::schema::*;
 
 #[derive(Debug, Queryable, Selectable, Identifiable, Serialize, Deserialize)]
@@ -104,16 +106,20 @@ pub struct Quote {
 	pub trades: Option<BigDecimal>,
 	pub change_24hrs: BigDecimal,
 	pub change_5days: BigDecimal,
-	pub change_10days: BigDecimal,
-	pub change_1week: BigDecimal,
+	pub change_7days: BigDecimal,
+	pub change_month: BigDecimal,
 	pub change_1month: BigDecimal,
+	pub change_year: BigDecimal,
+	pub change_12month: BigDecimal,
 	pub change_1year: BigDecimal,
 	pub change_2year: BigDecimal,
+	pub change_3year: BigDecimal,
+	pub change_4year: BigDecimal,
 	pub change_5year: BigDecimal,
-	pub change_month: BigDecimal,
-	pub change_year: BigDecimal,
+	pub change_begin: BigDecimal,
 	pub daily_factor: BigDecimal,
 	pub accumulated_factor: BigDecimal,
+    pub uuid: Uuid
 }
 
 #[derive(Debug, Serialize, Deserialize, Insertable)]
@@ -133,14 +139,17 @@ pub struct NewQuote {
 	pub trades: Option<BigDecimal>,
 	pub change_24hrs: BigDecimal,
 	pub change_5days: BigDecimal,
-	pub change_10days: BigDecimal,
-	pub change_1week: BigDecimal,
+	pub change_7days: BigDecimal,
+	pub change_month: BigDecimal,
 	pub change_1month: BigDecimal,
+	pub change_year: BigDecimal,
+	pub change_12month: BigDecimal,
 	pub change_1year: BigDecimal,
 	pub change_2year: BigDecimal,
+	pub change_3year: BigDecimal,
+	pub change_4year: BigDecimal,
 	pub change_5year: BigDecimal,
-	pub change_month: BigDecimal,
-	pub change_year: BigDecimal,
+	pub change_begin: BigDecimal,
 	pub daily_factor: BigDecimal,
 	pub accumulated_factor: BigDecimal,
 }
