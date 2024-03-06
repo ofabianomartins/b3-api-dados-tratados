@@ -10,7 +10,7 @@ job:
 
 test:
 	DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/ghostfoliodata_test diesel migration run
-	DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/ghostfoliodata_test cargo test -- --test-threads=1
+	DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/ghostfoliodata_test cargo test -- --test-threads=1 # --nocapture
 
 redis:
 	docker exec -it ghostfoliodataredis redis-cli

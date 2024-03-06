@@ -29,6 +29,5 @@ fn main() {
             quote_service.process_quote(&item.0);
             let result: i32 = conn.zrem("quote_queue", item.0).expect("ZREM failed!");
         }
-
     }
 }
