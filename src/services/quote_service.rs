@@ -73,7 +73,7 @@ impl QuoteService<'_> {
     }
 
     fn get_date_rentability(&mut self, id_value: i32, date_value: NaiveDate, close_value: BigDecimal, days: i32) -> BigDecimal {
-        let date_rent = self.business_calendar.advance(date_value, (-1 * days).into() );
+        let date_rent = self.business_calendar.advance(date_value, days.into() );
         let change_5days_value = self.get_rentability(
             id_value, 
             close_value.clone(),
@@ -108,39 +108,23 @@ impl QuoteService<'_> {
     }
 
     fn insert_new_quote(&mut self, ticker_id_value: i32, quote_params: QuoteParams) {
+        let change_24hrs_value = self.get_date_rentability(ticker_id_value, quote_params.date.clone(), quote_params.close.clone(), -1);
 
-        println!("Insert new quotes!!!!");
-        
-        println!("24!!!!");
-        let change_24hrs_value = self.get_date_rentability(ticker_id_value, quote_params.date.clone(), quote_params.close.clone(), 1);
+        let change_5days_value = self.get_date_rentability(ticker_id_value, quote_params.date.clone(), quote_params.close.clone(), -5);
+        let change_7days_value = self.get_date_rentability(ticker_id_value, quote_params.date.clone(), quote_params.close.clone(), -7);
 
-        println!("5day!!!!");
-        let change_5days_value = self.get_date_rentability(ticker_id_value, quote_params.date.clone(), quote_params.close.clone(), 5);
-        println!("7day!!!!");
-        let change_7days_value = self.get_date_rentability(ticker_id_value, quote_params.date.clone(), quote_params.close.clone(), 7);
-
-        println!("month!!!!");
         let change_month_value = self.get_month_rentability(ticker_id_value, quote_params.date.clone(), quote_params.close.clone() );
 
-        println!("1month!!!!");
-        let change_1month_value = self.get_date_rentability(ticker_id_value, quote_params.date.clone(), quote_params.close.clone(), 30);
-        println!("12month!!!!");
-        let change_12month_value = self.get_date_rentability(ticker_id_value, quote_params.date.clone(), quote_params.close.clone(), 365);
+        let change_1month_value = self.get_date_rentability(ticker_id_value, quote_params.date.clone(), quote_params.close.clone(), -30);
+        let change_12month_value = self.get_date_rentability(ticker_id_value, quote_params.date.clone(), quote_params.close.clone(), -365);
 
-        println!("1year!!!!");
-        let change_1year_value = self.get_date_rentability(ticker_id_value, quote_params.date.clone(), quote_params.close.clone(), 365);
-        println!("2year!!!!");
-        let change_2year_value = self.get_date_rentability(ticker_id_value, quote_params.date.clone(), quote_params.close.clone(), 365 * 2);
-        println!("3year!!!!");
-        let change_3year_value = self.get_date_rentability(ticker_id_value, quote_params.date.clone(), quote_params.close.clone(), 365 * 3);
-        println!("4year!!!!");
-        let change_4year_value = self.get_date_rentability(ticker_id_value, quote_params.date.clone(), quote_params.close.clone(), 365 * 4);
-        println!("5year!!!!");
-        let change_5year_value = self.get_date_rentability(ticker_id_value, quote_params.date.clone(), quote_params.close.clone(), 365 * 5);
+        let change_1year_value = self.get_date_rentability(ticker_id_value, quote_params.date.clone(), quote_params.close.clone(), -365);
+        let change_2year_value = self.get_date_rentability(ticker_id_value, quote_params.date.clone(), quote_params.close.clone(), -365 * 2);
+        let change_3year_value = self.get_date_rentability(ticker_id_value, quote_params.date.clone(), quote_params.close.clone(), -365 * 3);
+        let change_4year_value = self.get_date_rentability(ticker_id_value, quote_params.date.clone(), quote_params.close.clone(), -365 * 4);
+        let change_5year_value = self.get_date_rentability(ticker_id_value, quote_params.date.clone(), quote_params.close.clone(), -365 * 5);
 
-        println!("year!!!!");
         let change_year_value = self.get_year_rentability(ticker_id_value, quote_params.date.clone(), quote_params.close.clone());
-        println!("begin!!!!");
         let change_begin_value = self.get_begin_rentability(ticker_id_value, quote_params.date.clone(), quote_params.close.clone());
 
         let new_quote = NewQuote {
@@ -184,8 +168,6 @@ impl QuoteService<'_> {
 
 
     pub fn process_quote(&mut self, message: &str) {
-        println!("Setting new quotes!!!!");
-
         let quote_params: QuoteParams = json::from_str(&message).unwrap();
         let symbol_param = quote_params.symbol.clone();
         let ticker_lists: Vec<Ticker> = tickers
