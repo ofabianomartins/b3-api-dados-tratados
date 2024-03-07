@@ -190,4 +190,40 @@ pub struct NewTheoryPortfolioTransaction {
     pub theory_portfolio_id: i32,
 }
 
+#[derive(Debug, Queryable, Selectable, Identifiable, Serialize, Deserialize)]
+#[diesel(table_name = indicators)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct Indicator {
+    pub id: i32,
+    pub name: String,
+    pub symbol: String,
+    pub indicator_type: String
+}
 
+#[derive(Debug, Serialize, Deserialize, Insertable)]
+#[diesel(table_name = indicators)]
+pub struct NewIndicator {
+    pub name: String,
+    pub symbol: String,
+    pub indicator_type: String
+}
+
+#[derive(Debug, Queryable, Selectable, Identifiable, Serialize, Deserialize)]
+#[diesel(table_name = indicator_values)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct IndicatorValue {
+    pub id: i32,
+    pub date: NaiveDate,
+    pub indicator_id: i32,
+    pub company_id: i32,
+    pub close: BigDecimal
+}
+
+#[derive(Debug, Serialize, Deserialize, Insertable)]
+#[diesel(table_name = indicator_values)]
+pub struct NewIndicatorValue {
+    pub date: NaiveDate,
+    pub company_id: i32,
+    pub indicator_id: i32,
+    pub close: BigDecimal
+}

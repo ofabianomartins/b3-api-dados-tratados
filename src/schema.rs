@@ -46,6 +46,32 @@ diesel::table! {
 }
 
 diesel::table! {
+    indicator_values (id) {
+        id -> Int4,
+        indicator_id -> Int4,
+        company_id -> Int4,
+        date -> Date,
+        close -> Numeric,
+        uuid -> Uuid,
+        created_at -> Timestamptz,
+        updated_at -> Timestamptz,
+    }
+}
+
+diesel::table! {
+    indicators (id) {
+        id -> Int4,
+        name -> Varchar,
+        symbol -> Varchar,
+        description -> Varchar,
+        indicator_type -> Varchar,
+        uuid -> Uuid,
+        created_at -> Timestamptz,
+        updated_at -> Timestamptz,
+    }
+}
+
+diesel::table! {
     quotes (id) {
         id -> Int4,
         ticker_id -> Int4,
@@ -121,6 +147,8 @@ diesel::table! {
 }
 
 diesel::joinable!(holidays -> calendars (calendar_id));
+diesel::joinable!(indicator_values -> companies (company_id));
+diesel::joinable!(indicator_values -> indicators (indicator_id));
 diesel::joinable!(quotes -> tickers (ticker_id));
 diesel::joinable!(theory_portfolio_transactions -> theory_portfolios (theory_portfolio_id));
 diesel::joinable!(theory_portfolio_transactions -> tickers (ticker_id));
@@ -134,6 +162,8 @@ diesel::allow_tables_to_appear_in_same_query!(
     companies,
     currencies,
     holidays,
+    indicator_values,
+    indicators,
     quotes,
     theory_portfolio_transactions,
     theory_portfolios,
