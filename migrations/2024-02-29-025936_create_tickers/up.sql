@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS public.tickers(
   company_id SERIAL NOT NULL,
   calendar_id SERIAL NOT NULL,
   currency_id SERIAL NOT NULL,
-  ticker_id SERIAL NULL,
+  ticker_id SERIAL,
   created_at timestamp with time zone NOT NULL DEFAULT NOW(),
   updated_at timestamp with time zone NOT NULL DEFAULT NOW(),
   CONSTRAINT fk_tickers_tickers FOREIGN KEY(ticker_id) REFERENCES tickers(id),
