@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS public.quotes(
   id SERIAL PRIMARY KEY, 
   ticker_id SERIAL,
   date DATE NOT NULL,  
+  adjust_close DECIMAL(25,8) NOT NULL,
   close DECIMAL(25,8) NOT NULL,
   open DECIMAL(25,8),
   high DECIMAL(25,8),
