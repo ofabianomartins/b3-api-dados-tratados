@@ -1,6 +1,12 @@
 INSERT INTO calendars(name, code) VALUES ('ANBIMA', 'anbima');
 INSERT INTO calendars(name, code) VALUES ('b3', 'b3');
 
+
+INSERT INTO indicators(name, symbol, description) VALUES ('Preço/Lucro', 'P/L', 'Preço sobre o patrimônio');
+INSERT INTO indicators(name, symbol, description) VALUES ('Preço/Preço/Valor Patrimonial por Ação', 'P/VPA', 'Preço/Valor Patrimonial por Ação');
+INSERT INTO indicators(name, symbol, description) VALUES ('Return Over Investiment', 'ROE', 'Retorno sobre o investimento');
+INSERT INTO indicators(name, symbol, description) VALUES ('EV/Ebitda', 'EV/Ebitda', 'Retorno sobre o investimento');
+
 INSERT INTO currencies(name, code) VALUES ('Real Brasileiro', 'BRL');
 
 INSERT INTO companies(name, company_type) VALUES ('Petrolio Brasileiro', 'DEFAULT');
