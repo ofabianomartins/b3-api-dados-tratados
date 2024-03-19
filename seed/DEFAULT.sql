@@ -6,6 +6,7 @@ INSERT INTO indicators(name, symbol, description) VALUES ('Preço/Lucro', 'P/L',
 INSERT INTO indicators(name, symbol, description) VALUES ('Preço/Preço/Valor Patrimonial por Ação', 'P/VPA', 'Preço/Valor Patrimonial por Ação');
 INSERT INTO indicators(name, symbol, description) VALUES ('Return Over Investiment', 'ROE', 'Retorno sobre o investimento');
 INSERT INTO indicators(name, symbol, description) VALUES ('EV/Ebitda', 'EV/Ebitda', 'Retorno sobre o investimento');
+INSERT INTO indicators(name, symbol, description) VALUES ('EV/Ebitda', 'EV/Ebitda', '');
 
 INSERT INTO currencies(name, code) VALUES ('Real Brasileiro', 'BRL');
 
