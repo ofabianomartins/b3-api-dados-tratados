@@ -19,7 +19,7 @@ use crate::schema::tickers;
 pub fn index(symbol: Option<String>) -> Json<Vec<Ticker>> {
     let conn = &mut db_connection();
 
-    let mut results: Vec<Ticker>;
+    let results: Vec<Ticker>;
 
     match symbol {
         Some(x) => {

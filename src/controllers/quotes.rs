@@ -9,15 +9,7 @@ use diesel::delete;
 
 use redis::Commands;
 
-use serde::Serialize;
-use serde::Deserialize;
-
-use std::fmt::Debug;
-
-use chrono::NaiveDate;
 use chrono::Utc;
-
-use bigdecimal::BigDecimal;
 
 use crate::connections::db_connection;
 use crate::connections::redis_connection;
@@ -51,7 +43,7 @@ pub struct CreatedJson(Json<Quote>);
 pub async fn create(quote_params: &str) -> &'static str {
     let conn = &mut redis_connection();
 
-    let result: i32 = conn.zadd(
+    let _result: i32 = conn.zadd(
         "quote_queue", 
         quote_params.replace("\n", "").replace(" ", ""),
         Utc::now().timestamp()
