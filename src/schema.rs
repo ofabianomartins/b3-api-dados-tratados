@@ -86,6 +86,23 @@ diesel::table! {
 }
 
 diesel::table! {
+    events (id) {
+        id -> Int4,
+        ticker_id -> Int4,
+        date -> Date,
+        ex_date -> Date,
+        liquidation_date -> Date,
+        #[sql_name = "type"]
+        type_ -> Varchar,
+        factor -> Numeric,
+        strike -> Nullable<Numeric>,
+        uuid -> Uuid,
+        created_at -> Timestamptz,
+        updated_at -> Timestamptz,
+    }
+}
+
+diesel::table! {
     holidays (id) {
         id -> Int4,
         name -> Varchar,
@@ -228,6 +245,7 @@ diesel::joinable!(asset_positions -> assets (asset_id));
 diesel::joinable!(asset_positions -> companies (company_id));
 diesel::joinable!(client_positions -> clients (client_id));
 diesel::joinable!(client_positions -> companies (company_id));
+diesel::joinable!(events -> tickers (ticker_id));
 diesel::joinable!(holidays -> calendars (calendar_id));
 diesel::joinable!(indicator_values -> companies (company_id));
 diesel::joinable!(indicator_values -> indicators (indicator_id));
@@ -250,6 +268,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     clients,
     companies,
     currencies,
+    events,
     holidays,
     indicator_values,
     indicators,
