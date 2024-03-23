@@ -24,117 +24,158 @@ pub struct RentabilityService<'a> {
 
 impl RentabilityService<'_> {
     pub fn new<'a>(conn: &'a mut PgConnection, business_calendar: &'a mut BusinessCalendar) -> RentabilityService<'a> {
-        RentabilityService {
-            conn: conn,
-            business_calendar: business_calendar
-        }
+        RentabilityService { conn: conn, business_calendar: business_calendar }
     }
 
-    fn get_rentability(&mut self, ticker_id_value: i32, today_close: BigDecimal, last: NaiveDate) -> BigDecimal {
-        println!("Insert new rentability quotes!!!!");
-        
-        let quotes_list: Vec<Quote> = quotes::dsl::quotes
+    fn get_previous_quote(&mut self, ticker_id_value: i32, today: NaiveDate) -> Option<Quote> {
+        let quotes_list = quotes::dsl::quotes
             .filter(quotes::dsl::ticker_id.eq(ticker_id_value))
-            .filter(quotes::dsl::date.eq(last))
+            .filter(quotes::dsl::date.le(today)) // eq(today))
+            .order(quotes::dsl::date.desc())
             .select(Quote::as_select())
             .limit(1)
             .load(self.conn)
             .expect("Error loading quotes");
 
         if quotes_list.len() == 0 {
-            return BigDecimal::from_str("0.0").unwrap();
+            return None;
         } else {
-            let quotes_close = quotes_list[0].close.clone();
-            let value = today_close / quotes_close + BigDecimal::from_str("-1.0").unwrap();
-            return value;
+            return Some(quotes_list[0].clone());
         }
     }
 
-    fn get_date_rentability(&mut self, id_value: i32, date_value: NaiveDate, close_value: BigDecimal, days: i32) -> BigDecimal {
-        let date_rent = self.business_calendar.advance(date_value, days.into() );
-        let change_5days_value = self.get_rentability(
-            id_value, 
-            close_value.clone(),
-            NaiveDate::parse_from_str(&date_rent, "%Y-%m-%d").unwrap()
-        );
-        return change_5days_value;
+    fn get_daily_factor(&mut self, yesterday_close: BigDecimal, today_close: BigDecimal) -> BigDecimal {
+        return BigDecimal::from_str("1.0").unwrap() + (
+            today_close / yesterday_close + BigDecimal::from_str("-1.0").unwrap()
+        )
     }
 
-    fn get_month_rentability(&mut self, id_value: i32, date_value: NaiveDate, close_value: BigDecimal) -> BigDecimal {
-        let date_rent = NaiveDate::from_ymd_opt(date_value.year(), date_value.month0(), 01).unwrap();
-        let change_value = self.get_rentability(
-            id_value, 
-            close_value.clone(),
-            date_rent
-        );
-        return change_value;
+    fn get_rentability(&mut self, ticker_id_value: i32, today_acc_factor: BigDecimal, date: NaiveDate) -> BigDecimal {
+        let quote = self.get_previous_quote(ticker_id_value, date);
+
+        match quote {
+            None => BigDecimal::from_str("1.0").unwrap(),
+            Some(x) => today_acc_factor / x.accumulated_factor.clone()
+        }
     }
 
-    fn get_year_rentability(&mut self, id_value: i32, date_value: NaiveDate, close_value: BigDecimal) -> BigDecimal {
-        let date_rent = NaiveDate::from_ymd_opt(date_value.year(), 01, 01).unwrap();
-        let change_value = self.get_rentability(
-            id_value, 
-            close_value.clone(),
-            date_rent
-        );
-        return change_value;
-    }
+    pub fn quote_rentability(&mut self, ticker_id: i32, quote_params: QuoteParams) -> NewQuote {
+        let previous_quote_option = self.get_previous_quote(ticker_id, quote_params.date.clone());
 
-    fn get_begin_rentability(&mut self, id_value: i32, date_rent: NaiveDate, close_value: BigDecimal) -> BigDecimal {
-        let change_value = self.get_rentability(id_value, close_value.clone(), date_rent);
-        return change_value;
-    }
+        if let Some(previous_quote) = previous_quote_option {
+            let date = quote_params.date;
 
-    pub fn quote_rentability(&mut self, ticker_id_value: i32, quote_params: QuoteParams) -> NewQuote {
-        let change_24hrs_value = self.get_date_rentability(ticker_id_value, quote_params.date.clone(), quote_params.close.clone(), -1);
+            let daily_factor = self.get_daily_factor(previous_quote.close, quote_params.close.clone());
+            let accumulated_factor: BigDecimal = previous_quote.accumulated_factor * daily_factor.clone();
 
-        let change_5days_value = self.get_date_rentability(ticker_id_value, quote_params.date.clone(), quote_params.close.clone(), -5);
-        let change_7days_value = self.get_date_rentability(ticker_id_value, quote_params.date.clone(), quote_params.close.clone(), -7);
+            let yesterday_str = self.business_calendar.advance(date, -1);
+            let yesterday = NaiveDate::parse_from_str(&yesterday_str, "%Y-%m-%d").unwrap();
+            let change_24hrs_value = self.get_rentability(ticker_id, accumulated_factor.clone(), yesterday);
 
-        let change_month_value = self.get_month_rentability(ticker_id_value, quote_params.date.clone(), quote_params.close.clone() );
+            let fivedays_str = self.business_calendar.advance(date, -5);
+            let fivedays = NaiveDate::parse_from_str(&fivedays_str, "%Y-%m-%d").unwrap();
+            let change_5days_value = self.get_rentability(ticker_id, accumulated_factor.clone(), fivedays);
 
-        let change_1month_value = self.get_date_rentability(ticker_id_value, quote_params.date.clone(), quote_params.close.clone(), -30);
-        let change_12month_value = self.get_date_rentability(ticker_id_value, quote_params.date.clone(), quote_params.close.clone(), -365);
+            let sevendays_str = self.business_calendar.advance(date, -7);
+            let sevendays = NaiveDate::parse_from_str(&sevendays_str, "%Y-%m-%d").unwrap();
+            let change_7days_value = self.get_rentability(ticker_id, accumulated_factor.clone(), sevendays);
 
-        let change_1year_value = self.get_date_rentability(ticker_id_value, quote_params.date.clone(), quote_params.close.clone(), -365);
-        let change_2year_value = self.get_date_rentability(ticker_id_value, quote_params.date.clone(), quote_params.close.clone(), -365 * 2);
-        let change_3year_value = self.get_date_rentability(ticker_id_value, quote_params.date.clone(), quote_params.close.clone(), -365 * 3);
-        let change_4year_value = self.get_date_rentability(ticker_id_value, quote_params.date.clone(), quote_params.close.clone(), -365 * 4);
-        let change_5year_value = self.get_date_rentability(ticker_id_value, quote_params.date.clone(), quote_params.close.clone(), -365 * 5);
+            let month_begin = NaiveDate::from_ymd_opt(date.year(), date.month0(), 01).unwrap();
+            let change_month_value = self.get_rentability(ticker_id, accumulated_factor.clone(), month_begin);
 
-        let change_year_value = self.get_year_rentability(ticker_id_value, quote_params.date.clone(), quote_params.close.clone());
-        let change_begin_value = self.get_begin_rentability(ticker_id_value, quote_params.date.clone(), quote_params.close.clone());
+            let onemonth_str = self.business_calendar.advance(date, -30);
+            let onemonth = NaiveDate::parse_from_str(&onemonth_str, "%Y-%m-%d").unwrap();
+            let change_1month_value = self.get_rentability(ticker_id, accumulated_factor.clone(), onemonth);
 
-        return NewQuote {
-            ticker_id: ticker_id_value,
-            date: quote_params.date,
-            close: quote_params.close,
-            open: quote_params.open,
-            high: quote_params.high,
-            low: quote_params.low,
-            ask: quote_params.ask,
-            bid: quote_params.bid,
-            trades: quote_params.trades,
-            volume: quote_params.volume, 
-            average: quote_params.average,
-            adjust: quote_params.adjust,
-            change_24hrs: change_24hrs_value.clone(),
-            change_5days: change_5days_value,
-            change_7days: change_7days_value,
-            change_1month: change_1month_value,
-            change_12month: change_12month_value,
-            change_1year: change_1year_value,
-            change_2year: change_2year_value,
-            change_3year: change_3year_value,
-            change_4year: change_4year_value,
-            change_5year: change_5year_value, 
-            change_month: change_month_value, 
-            change_year: change_year_value,
-            change_begin: change_begin_value,
-            daily_factor: change_24hrs_value, 
-            accumulated_factor: BigDecimal::from_str("0").unwrap()
-        };
+            let twelvemonth_str = self.business_calendar.advance(date, -365);
+            let twelvemonth = NaiveDate::parse_from_str(&twelvemonth_str, "%Y-%m-%d").unwrap();
+            let change_12month_value = self.get_rentability(ticker_id, accumulated_factor.clone(), twelvemonth);
 
+            let oneyear_str = self.business_calendar.advance(date, -365);
+            let oneyear = NaiveDate::parse_from_str(&oneyear_str, "%Y-%m-%d").unwrap();
+            let change_1year_value = self.get_rentability(ticker_id, accumulated_factor.clone(), oneyear);
+
+            let twoyear_str = self.business_calendar.advance(date, -365*2);
+            let twoyear = NaiveDate::parse_from_str(&twoyear_str, "%Y-%m-%d").unwrap();
+            let change_2year_value = self.get_rentability(ticker_id, accumulated_factor.clone(), twoyear);
+
+            let threeyear_str = self.business_calendar.advance(date, -365*3);
+            let threeyear = NaiveDate::parse_from_str(&threeyear_str, "%Y-%m-%d").unwrap();
+            let change_3year_value = self.get_rentability(ticker_id, accumulated_factor.clone(), threeyear);
+
+            let fouryear_str = self.business_calendar.advance(date, -365*4);
+            let fouryear = NaiveDate::parse_from_str(&fouryear_str, "%Y-%m-%d").unwrap();
+            let change_4year_value = self.get_rentability(ticker_id, accumulated_factor.clone(), fouryear);
+
+            let fiveyear_str = self.business_calendar.advance(date, -365*3);
+            let fiveyear = NaiveDate::parse_from_str(&fiveyear_str, "%Y-%m-%d").unwrap();
+            let change_5year_value = self.get_rentability(ticker_id, accumulated_factor.clone(), fiveyear);
+
+            let year = NaiveDate::from_ymd_opt(date.year(), 01, 01).unwrap();
+            let change_year_value = self.get_rentability(ticker_id, accumulated_factor.clone(), year);
+
+            return NewQuote {
+                ticker_id: ticker_id,
+                date: quote_params.date,
+                adjust_close: quote_params.close.clone(),
+                close: quote_params.close,
+                open: quote_params.open,
+                high: quote_params.high,
+                low: quote_params.low,
+                ask: quote_params.ask,
+                bid: quote_params.bid,
+                trades: quote_params.trades,
+                volume: quote_params.volume, 
+                average: quote_params.average,
+                adjust: quote_params.adjust,
+                change_24hrs: change_24hrs_value,
+                change_5days: change_5days_value,
+                change_7days: change_7days_value,
+                change_1month: change_1month_value,
+                change_12month: change_12month_value,
+                change_1year: change_1year_value,
+                change_2year: change_2year_value,
+                change_3year: change_3year_value,
+                change_4year: change_4year_value,
+                change_5year: change_5year_value, 
+                change_month: change_month_value, 
+                change_year: change_year_value,
+                change_begin: accumulated_factor.clone(),
+                daily_factor: daily_factor, 
+                accumulated_factor: accumulated_factor
+            };
+        } else {
+            return NewQuote {
+                ticker_id: ticker_id,
+                date: quote_params.date,
+                adjust_close: quote_params.close.clone(),
+                close: quote_params.close,
+                open: quote_params.open,
+                high: quote_params.high,
+                low: quote_params.low,
+                ask: quote_params.ask,
+                bid: quote_params.bid,
+                trades: quote_params.trades,
+                volume: quote_params.volume, 
+                average: quote_params.average,
+                adjust: quote_params.adjust,
+                change_24hrs: BigDecimal::from_str("1.0").unwrap(),
+                change_5days: BigDecimal::from_str("1.0").unwrap(),
+                change_7days: BigDecimal::from_str("1.0").unwrap(),
+                change_1month: BigDecimal::from_str("1.0").unwrap(),
+                change_12month: BigDecimal::from_str("1.0").unwrap(),
+                change_1year: BigDecimal::from_str("1.0").unwrap(),
+                change_2year: BigDecimal::from_str("1.0").unwrap(),
+                change_3year: BigDecimal::from_str("1.0").unwrap(),
+                change_4year: BigDecimal::from_str("1.0").unwrap(),
+                change_5year: BigDecimal::from_str("1.0").unwrap(),
+                change_month: BigDecimal::from_str("1.0").unwrap(),
+                change_year: BigDecimal::from_str("1.0").unwrap(),
+                change_begin: BigDecimal::from_str("1.0").unwrap(),
+                daily_factor: BigDecimal::from_str("1.0").unwrap(),
+                accumulated_factor: BigDecimal::from_str("1.0").unwrap(),
+            };
+        }
     }
 
 }

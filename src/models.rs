@@ -87,13 +87,14 @@ pub struct NewTicker<'a> {
     pub calendar_id: i32,
 }
 
-#[derive(Debug, Queryable, Selectable, Identifiable, Serialize, Deserialize)]
+#[derive(Debug, Clone, Queryable, Selectable, Identifiable, Serialize, Deserialize)]
 #[diesel(table_name = quotes)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Quote {
     pub id: i32,
     pub date: NaiveDate,
     pub ticker_id: i32,
+    pub adjust_close: BigDecimal,
     pub close: BigDecimal,
 	pub open: Option<BigDecimal>,
 	pub high: Option<BigDecimal>,
@@ -127,6 +128,7 @@ pub struct Quote {
 pub struct NewQuote {
     pub date: NaiveDate,
     pub ticker_id: i32,
+    pub adjust_close: BigDecimal,
     pub close: BigDecimal,
 	pub open: Option<BigDecimal>,
 	pub high: Option<BigDecimal>,
