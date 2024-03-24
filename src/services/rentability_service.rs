@@ -52,6 +52,7 @@ impl RentabilityService<'_> {
         let provents_list: Vec<Event> = events::dsl::events
             .filter(events::dsl::ticker_id.eq(ticker_id.clone()))
             .filter(events::dsl::type_.eq_any(vec!["DIVIDEND", "INTEREST_ON_OWN_CAPITAL_ISSUE"]))
+            .filter(events::dsl::date.eq(date))
             .select(Event::as_select())
             .load(self.conn)
             .expect("Error loading tickers");
@@ -59,6 +60,7 @@ impl RentabilityService<'_> {
         let splits_list: Vec<Event> = events::dsl::events
             .filter(events::dsl::ticker_id.eq(ticker_id.clone()))
             .filter(events::dsl::type_.eq_any(vec!["SPLIT", "INVERSE_SPLIT"]))
+            .filter(events::dsl::date.eq(date))
             .select(Event::as_select())
             .load(self.conn)
             .expect("Error loading tickers");
@@ -82,15 +84,45 @@ impl RentabilityService<'_> {
     }
 
     fn normalize_yesterday_close(&mut self, close: BigDecimal, ticker_id: i32, date: NaiveDate) -> BigDecimal {
-        let splits_list: Vec<Event> = events::dsl::events
+        let bonuses_list: Vec<Event> = events::dsl::events
             .filter(events::dsl::ticker_id.eq(ticker_id.clone()))
-            .filter(events::dsl::type_.eq_any(vec!["SPLIT", "INVERSE_SPLIT"]))
+            .filter(events::dsl::type_.eq_any(vec!["BONUS_ISSUE"]))
+            .filter(events::dsl::date.eq(date))
             .select(Event::as_select())
             .load(self.conn)
             .expect("Error loading tickers");
 
+        let subscriptions_list: Vec<Event> = events::dsl::events
+            .filter(events::dsl::ticker_id.eq(ticker_id.clone()))
+            .filter(events::dsl::type_.eq_any(vec!["SUBSCRIPTION"]))
+            .filter(events::dsl::date.eq(date))
+            .select(Event::as_select())
+            .load(self.conn)
+            .expect("Error loading tickers");
+
+        let splits_list: Vec<Event> = events::dsl::events
+            .filter(events::dsl::ticker_id.eq(ticker_id.clone()))
+            .filter(events::dsl::type_.eq_any(vec!["SPLIT", "INVERSE_SPLIT"]))
+            .filter(events::dsl::date.eq(date))
+            .select(Event::as_select())
+            .load(self.conn)
+            .expect("Error loading tickers");
 
         let mut result_close = close;
+        for item in &subscriptions_list {
+            if let Some(strike) = &item.strike {
+                println!("strike {}", strike);
+                println!("factor {}", item.factor.clone());
+                println!("result_close {}", result_close);
+                let fin = (strike * item.factor.clone() ) + result_close;
+                result_close = fin / (BigDecimal::from_str("1.0").unwrap() + item.factor.clone());
+            }
+        }
+
+        for item in &bonuses_list {
+            result_close = result_close / (BigDecimal::from_str("1.0").unwrap() + item.factor.clone());
+        }
+
         for item in &splits_list {
             if item.type_.as_str() == "SPLIT" {
                 result_close = result_close / item.factor.clone();
@@ -101,35 +133,7 @@ impl RentabilityService<'_> {
         }
 
         return result_close;
-
     }
-
-//  def self.normalize_yesterday_close(y_close, security, date)
-//    events = CorporateAction.by(security, date).all
-//    rsplits = events.select { |e| SPLIT_TYPES.member?(e.type) }
-//    subscriptions = events.select { |e| e.type == 'SUBSCRIPTION_RIGHT' }
-//    bonuses = events.select { |e| e.type == 'BONUS_ISSUE' }
-//
-//    # Ajustando o dia anterior caso haja a execução de um direito de subscrição
-//    yc_sub = subscriptions.reduce(y_close) do |acc, sr|
-//      fin = (sr.strike * sr.factor) + acc
-//      (fin / (1.0 + sr.factor)).round(2)
-//    end
-//
-//    # Ajustando o dia anterior casa haja bonificação do emissor
-//    yc_sub = bonuses.reduce(yc_sub) do |acc, sr|
-//      (acc / (1 + sr.factor)).round(2)
-//    end
-//
-//    # Ajustando o dia anterior caso haja um split ou reverse_split
-//    rsplits.reduce(yc_sub) do |acc, s|
-//      if s.split?
-//        acc / s.factor
-//      elsif s.rsplit?
-//        acc * s.factor
-//      end
-//    end
-//  end
 
     fn get_daily_factor(&mut self, yesterday_close: BigDecimal, today_close: BigDecimal, unit: &str) -> BigDecimal {
         if unit == "INDEX_NUMBER" {
@@ -157,7 +161,7 @@ impl RentabilityService<'_> {
             let date = quote_params.date;
 
             let normalized_close: BigDecimal = self.normalize_close(quote_params.close.clone(), ticker.id, date);
-            let normalized_yesterday_close: BigDecimal = self.normalize_yesterday_close(previous_quote.close, ticker.id, date);
+            let normalized_yesterday_close: BigDecimal = self.normalize_yesterday_close(previous_quote.close.clone(), ticker.id, date);
 
             let daily_factor = self.get_daily_factor(normalized_yesterday_close, normalized_close.clone(), ticker.unit.as_str());
             let accumulated_factor: BigDecimal = previous_quote.accumulated_factor * daily_factor.clone();
