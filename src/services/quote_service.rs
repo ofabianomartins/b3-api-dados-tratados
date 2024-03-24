@@ -62,7 +62,7 @@ impl QuoteService<'_> {
         } else {
             let mut rentability_service = RentabilityService::new(self.conn, self.business_calendar);
             let date = quote_params.date.clone();
-            let new_quote = rentability_service.quote_rentability(ticker_lists[0].id, quote_params);
+            let new_quote = rentability_service.quote_rentability(&ticker_lists[0], quote_params);
 
             insert_into(quotes::dsl::quotes)
                 .values(&new_quote)

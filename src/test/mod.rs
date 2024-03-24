@@ -6,6 +6,7 @@ use diesel::PgConnection;
 use diesel::delete;
 use diesel::RunQueryDsl;
 
+use crate::schema::events::dsl::*;
 use crate::schema::quotes::dsl::*;
 use crate::schema::tickers::dsl::*;
 use crate::schema::calendars::dsl::*;
@@ -20,6 +21,10 @@ pub fn clean_database(conn: &mut PgConnection) {
     delete(quotes)
         .execute(conn)
         .expect("Failed to delete quotes");
+
+    delete(events)
+        .execute(conn)
+        .expect("Failed to delete events");
 
     delete(tickers)
         .execute(conn)

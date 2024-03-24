@@ -3,6 +3,8 @@ use diesel::SelectableHelper;
 use diesel::RunQueryDsl;
 use diesel::prelude::PgConnection;
 
+use crate::models::Event;
+use crate::models::NewEvent;
 use crate::models::Quote;
 use crate::models::NewQuote;
 use crate::models::Ticker;
@@ -20,6 +22,7 @@ use crate::models::NewSubsector;
 use crate::models::Sector;
 use crate::models::NewSector;
 
+use crate::schema::events;
 use crate::schema::quotes;
 use crate::schema::tickers;
 use crate::schema::calendars::dsl::*;
@@ -92,6 +95,7 @@ fn setup_data(conn: &mut PgConnection) -> Ticker {
     let new_ticker = NewTicker { 
         symbol: "PETR4", 
         security_type: "STOCK",
+        unit: "INDEX_NUMBER",
         creation_date: NaiveDate::from_str(
             &String::from_str("2024-03-01").expect("Date format problem!"),
         ).expect("NaiveDate not fix"),
@@ -185,7 +189,7 @@ fn test_create_quote() {
         trades: Some(BigDecimal::from_str("1.0").unwrap()),
     };
 
-    let new_quote: NewQuote = service.quote_rentability(ticker.id, quote_params);
+    let new_quote: NewQuote = service.quote_rentability(&ticker, quote_params);
 
     assert_eq!(new_quote.close, BigDecimal::from_str("1.0").unwrap());
     assert_eq!(new_quote.adjust_close, BigDecimal::from_str("1.0").unwrap());
@@ -256,7 +260,7 @@ fn test_create_quote_with_yesterday() {
     };
 
     let mut service = RentabilityService::new(connection, business_calendar);
-    let new_quote: NewQuote = service.quote_rentability(ticker.id, quote_params);
+    let new_quote: NewQuote = service.quote_rentability(&ticker, quote_params);
 
     assert_eq!(new_quote.close, BigDecimal::from_str("15.0").unwrap());
     assert_eq!(new_quote.adjust_close, BigDecimal::from_str("15.0").unwrap());
@@ -317,7 +321,7 @@ fn test_create_quote_with_5days_past() {
     };
 
     let mut service = RentabilityService::new(connection, business_calendar);
-    let new_quote: NewQuote = service.quote_rentability(ticker.id, quote_params);
+    let new_quote: NewQuote = service.quote_rentability(&ticker, quote_params);
 
     assert_eq!(new_quote.close, BigDecimal::from_str("22.5").unwrap());
     assert_eq!(new_quote.adjust_close, BigDecimal::from_str("22.5").unwrap());
@@ -370,7 +374,7 @@ fn test_create_quote_with_7days_past() {
     };
 
     let mut service = RentabilityService::new(connection, business_calendar);
-    let new_quote: NewQuote = service.quote_rentability(ticker.id, quote_params);
+    let new_quote: NewQuote = service.quote_rentability(&ticker, quote_params);
 
     assert_eq!(new_quote.close, BigDecimal::from_str("28.0").unwrap());
     assert_eq!(new_quote.adjust_close, BigDecimal::from_str("28.0").unwrap());
@@ -423,7 +427,7 @@ fn test_create_quote_with_month_past() {
         Vec::new()
     );
     let mut service = RentabilityService::new(connection, business_calendar);
-    let new_quote: NewQuote = service.quote_rentability(ticker.id, quote_params);
+    let new_quote: NewQuote = service.quote_rentability(&ticker, quote_params);
 
     assert_eq!(new_quote.close, BigDecimal::from_str("28.0").unwrap());
     assert_eq!(new_quote.adjust_close, BigDecimal::from_str("28.0").unwrap());
@@ -477,7 +481,7 @@ fn test_create_quote_with_year_past() {
         Vec::new()
     );
     let mut service = RentabilityService::new(connection, business_calendar);
-    let new_quote: NewQuote = service.quote_rentability(ticker.id, quote_params);
+    let new_quote: NewQuote = service.quote_rentability(&ticker, quote_params);
 
     assert_eq!(new_quote.close, BigDecimal::from_str("28.0").unwrap());
     assert_eq!(new_quote.adjust_close, BigDecimal::from_str("28.0").unwrap());
@@ -542,7 +546,7 @@ fn test_create_quote_with_12months_past() {
     };
 
     let mut service = RentabilityService::new(connection, business_calendar);
-    let new_quote: NewQuote = service.quote_rentability(ticker.id, quote_params);
+    let new_quote: NewQuote = service.quote_rentability(&ticker, quote_params);
 
     assert_eq!(new_quote.close, BigDecimal::from_str("22.5").unwrap());
     assert_eq!(new_quote.adjust_close, BigDecimal::from_str("22.5").unwrap());
@@ -608,7 +612,7 @@ fn test_create_quote_with_1year_past() {
     };
 
     let mut service = RentabilityService::new(connection, business_calendar);
-    let new_quote: NewQuote = service.quote_rentability(ticker.id, quote_params);
+    let new_quote: NewQuote = service.quote_rentability(&ticker, quote_params);
 
     assert_eq!(new_quote.close, BigDecimal::from_str("22.5").unwrap());
     assert_eq!(new_quote.adjust_close, BigDecimal::from_str("22.5").unwrap());
@@ -675,7 +679,7 @@ fn test_create_quote_with_2year_past() {
     };
 
     let mut service = RentabilityService::new(connection, business_calendar);
-    let new_quote: NewQuote = service.quote_rentability(ticker.id, quote_params);
+    let new_quote: NewQuote = service.quote_rentability(&ticker, quote_params);
 
     assert_eq!(new_quote.close, BigDecimal::from_str("22.5").unwrap());
     assert_eq!(new_quote.adjust_close, BigDecimal::from_str("22.5").unwrap());
@@ -743,7 +747,7 @@ fn test_create_quote_with_3year_past() {
     };
 
     let mut service = RentabilityService::new(connection, business_calendar);
-    let new_quote: NewQuote = service.quote_rentability(ticker.id, quote_params);
+    let new_quote: NewQuote = service.quote_rentability(&ticker, quote_params);
 
     assert_eq!(new_quote.close, BigDecimal::from_str("22.5").unwrap());
     assert_eq!(new_quote.adjust_close, BigDecimal::from_str("22.5").unwrap());
@@ -812,7 +816,7 @@ fn test_create_quote_with_4year_past() {
     };
 
     let mut service = RentabilityService::new(connection, business_calendar);
-    let new_quote: NewQuote = service.quote_rentability(ticker.id, quote_params);
+    let new_quote: NewQuote = service.quote_rentability(&ticker, quote_params);
 
     assert_eq!(new_quote.close, BigDecimal::from_str("22.5").unwrap());
     assert_eq!(new_quote.adjust_close, BigDecimal::from_str("22.5").unwrap());
@@ -882,7 +886,7 @@ fn test_create_quote_with_5year_past() {
     };
 
     let mut service = RentabilityService::new(connection, business_calendar);
-    let new_quote: NewQuote = service.quote_rentability(ticker.id, quote_params);
+    let new_quote: NewQuote = service.quote_rentability(&ticker, quote_params);
 
     assert_eq!(new_quote.close, BigDecimal::from_str("22.5").unwrap());
     assert_eq!(new_quote.adjust_close, BigDecimal::from_str("22.5").unwrap());
@@ -899,6 +903,478 @@ fn test_create_quote_with_5year_past() {
     assert_eq!(new_quote.change_5year, BigDecimal::from_str("2.25").unwrap());
     assert_eq!(new_quote.daily_factor, BigDecimal::from_str("1.5").unwrap());
     assert_eq!(new_quote.accumulated_factor, BigDecimal::from_str("2.25").unwrap());
+    
+    clean_database(connection);
+}
+
+#[test]
+fn test_create_quote_with_dividends_past() {
+    let connection = &mut db_connection();
+    clean_database(connection);
+    let ticker = setup_data(connection);
+
+    let business_calendar = &mut BusinessCalendar::new(
+        String::from_str("2024-03-01").expect("Date format problem!"),
+        String::from_str("2024-03-10").expect("Date format problem!"),
+        Vec::new()
+    );
+
+    let date = NaiveDate::from_str(
+        &String::from_str("2024-03-01").expect("Date format problem!"),
+    ).expect("NaiveDate not fix");
+    let yesterday = business_calendar.advance(date, -1);
+    let dplus2 = business_calendar.advance(date, 2);
+
+    let new_event = NewEvent {
+        ticker_id: ticker.id,
+        date: date,
+        ex_date: date,
+        liquidation_date: dplus2,
+        type_: "DIVIDEND",
+        factor: BigDecimal::from_str("-2.5").unwrap(),
+        strike: None
+    };
+
+    insert_into(events::dsl::events)
+        .values(&new_event)
+        .returning(Event::as_returning())
+        .get_result(connection)
+        .expect("Failed to insert quote!");
+
+    create_quote(connection,
+        ticker.id,
+        yesterday,
+        BigDecimal::from_str("10.0").unwrap(),
+        BigDecimal::from_str("1.0").unwrap(),
+        BigDecimal::from_str("1.0").unwrap()
+    );
+
+    let quote_params = QuoteParams {
+        symbol: String::from_str("PETR4").unwrap(),
+        date: date, 
+        close: BigDecimal::from_str("22.5").unwrap(),
+        open: Some(BigDecimal::from_str("1.0").unwrap()),
+        high: Some(BigDecimal::from_str("1.0").unwrap()),
+        low: Some(BigDecimal::from_str("1.0").unwrap()),
+        average: Some(BigDecimal::from_str("1.0").unwrap()),
+        ask: Some(BigDecimal::from_str("1.0").unwrap()),
+        bid: Some(BigDecimal::from_str("1.0").unwrap()),
+        adjust: Some(BigDecimal::from_str("1.0").unwrap()),
+        volume: Some(BigDecimal::from_str("1.0").unwrap()),
+        trades: Some(BigDecimal::from_str("1.0").unwrap()),
+    };
+
+    let mut service = RentabilityService::new(connection, business_calendar);
+    let new_quote: NewQuote = service.quote_rentability(&ticker, quote_params);
+
+    assert_eq!(new_quote.close, BigDecimal::from_str("22.5").unwrap());
+    assert_eq!(new_quote.adjust_close, BigDecimal::from_str("20.0").unwrap());
+    assert_eq!(new_quote.daily_factor, BigDecimal::from_str("2.0").unwrap());
+    assert_eq!(new_quote.accumulated_factor, BigDecimal::from_str("2.0").unwrap());
+    
+    clean_database(connection);
+}
+
+#[test]
+fn test_create_quote_with_interests_past() {
+    let connection = &mut db_connection();
+    clean_database(connection);
+    let ticker = setup_data(connection);
+
+    let business_calendar = &mut BusinessCalendar::new(
+        String::from_str("2024-03-01").expect("Date format problem!"),
+        String::from_str("2024-03-10").expect("Date format problem!"),
+        Vec::new()
+    );
+
+    let date = NaiveDate::from_str(
+        &String::from_str("2024-03-01").expect("Date format problem!"),
+    ).expect("NaiveDate not fix");
+    let yesterday = business_calendar.advance(date, -1);
+    let dplus2 = business_calendar.advance(date, 2);
+
+    let new_event = NewEvent {
+        ticker_id: ticker.id,
+        date: date,
+        ex_date: date,
+        liquidation_date: dplus2,
+        type_: "INTEREST_ON_OWN_CAPITAL_ISSUE",
+        factor: BigDecimal::from_str("-2.5").unwrap(),
+        strike: None
+    };
+
+    insert_into(events::dsl::events)
+        .values(&new_event)
+        .returning(Event::as_returning())
+        .get_result(connection)
+        .expect("Failed to insert quote!");
+
+    create_quote(connection,
+        ticker.id,
+        yesterday,
+        BigDecimal::from_str("10.0").unwrap(),
+        BigDecimal::from_str("1.0").unwrap(),
+        BigDecimal::from_str("1.0").unwrap()
+    );
+
+    let quote_params = QuoteParams {
+        symbol: String::from_str("PETR4").unwrap(),
+        date: date, 
+        close: BigDecimal::from_str("22.5").unwrap(),
+        open: Some(BigDecimal::from_str("1.0").unwrap()),
+        high: Some(BigDecimal::from_str("1.0").unwrap()),
+        low: Some(BigDecimal::from_str("1.0").unwrap()),
+        average: Some(BigDecimal::from_str("1.0").unwrap()),
+        ask: Some(BigDecimal::from_str("1.0").unwrap()),
+        bid: Some(BigDecimal::from_str("1.0").unwrap()),
+        adjust: Some(BigDecimal::from_str("1.0").unwrap()),
+        volume: Some(BigDecimal::from_str("1.0").unwrap()),
+        trades: Some(BigDecimal::from_str("1.0").unwrap()),
+    };
+
+    let mut service = RentabilityService::new(connection, business_calendar);
+    let new_quote: NewQuote = service.quote_rentability(&ticker, quote_params);
+
+    assert_eq!(new_quote.close, BigDecimal::from_str("22.5").unwrap());
+    assert_eq!(new_quote.adjust_close, BigDecimal::from_str("20.0").unwrap());
+    assert_eq!(new_quote.daily_factor, BigDecimal::from_str("2.0").unwrap());
+    assert_eq!(new_quote.accumulated_factor, BigDecimal::from_str("2.0").unwrap());
+    
+    clean_database(connection);
+}
+
+#[test]
+fn test_create_quote_with_splits_normalize_close_past() {
+    let connection = &mut db_connection();
+    clean_database(connection);
+    let ticker = setup_data(connection);
+
+    let business_calendar = &mut BusinessCalendar::new(
+        String::from_str("2024-03-01").expect("Date format problem!"),
+        String::from_str("2024-03-10").expect("Date format problem!"),
+        Vec::new()
+    );
+
+    let date = NaiveDate::from_str(
+        &String::from_str("2024-03-01").expect("Date format problem!"),
+    ).expect("NaiveDate not fix");
+    let yesterday = business_calendar.advance(date, -1);
+    let dplus2 = business_calendar.advance(date, 2);
+
+    let new_event1 = NewEvent {
+        ticker_id: ticker.id,
+        date: date,
+        ex_date: date,
+        liquidation_date: dplus2,
+        type_: "DIVIDEND",
+        factor: BigDecimal::from_str("-2.5").unwrap(),
+        strike: None
+    };
+
+    insert_into(events::dsl::events)
+        .values(&new_event1)
+        .returning(Event::as_returning())
+        .get_result(connection)
+        .expect("Failed to insert quote!");
+
+    let new_event2 = NewEvent {
+        ticker_id: ticker.id,
+        date: date,
+        ex_date: date,
+        liquidation_date: dplus2,
+        type_: "SPLIT",
+        factor: BigDecimal::from_str("2.0").unwrap(),
+        strike: None
+    };
+
+    insert_into(events::dsl::events)
+        .values(&new_event2)
+        .returning(Event::as_returning())
+        .get_result(connection)
+        .expect("Failed to insert quote!");
+
+    create_quote(connection,
+        ticker.id,
+        yesterday,
+        BigDecimal::from_str("20.0").unwrap(),
+        BigDecimal::from_str("1.0").unwrap(),
+        BigDecimal::from_str("1.0").unwrap()
+    );
+
+    let quote_params = QuoteParams {
+        symbol: String::from_str("PETR4").unwrap(),
+        date: date, 
+        close: BigDecimal::from_str("22.5").unwrap(),
+        open: Some(BigDecimal::from_str("1.0").unwrap()),
+        high: Some(BigDecimal::from_str("1.0").unwrap()),
+        low: Some(BigDecimal::from_str("1.0").unwrap()),
+        average: Some(BigDecimal::from_str("1.0").unwrap()),
+        ask: Some(BigDecimal::from_str("1.0").unwrap()),
+        bid: Some(BigDecimal::from_str("1.0").unwrap()),
+        adjust: Some(BigDecimal::from_str("1.0").unwrap()),
+        volume: Some(BigDecimal::from_str("1.0").unwrap()),
+        trades: Some(BigDecimal::from_str("1.0").unwrap()),
+    };
+
+    let mut service = RentabilityService::new(connection, business_calendar);
+    let new_quote: NewQuote = service.quote_rentability(&ticker, quote_params);
+
+    assert_eq!(new_quote.close, BigDecimal::from_str("22.5").unwrap());
+    assert_eq!(new_quote.adjust_close, BigDecimal::from_str("21.25").unwrap());
+    assert_eq!(new_quote.daily_factor, BigDecimal::from_str("2.125").unwrap());
+    assert_eq!(new_quote.accumulated_factor, BigDecimal::from_str("2.125").unwrap());
+    
+    clean_database(connection);
+}
+
+#[test]
+fn test_create_quote_with_inverse_splits_past() {
+    let connection = &mut db_connection();
+    clean_database(connection);
+    let ticker = setup_data(connection);
+
+    let business_calendar = &mut BusinessCalendar::new(
+        String::from_str("2024-03-01").expect("Date format problem!"),
+        String::from_str("2024-03-10").expect("Date format problem!"),
+        Vec::new()
+    );
+
+    let date = NaiveDate::from_str(
+        &String::from_str("2024-03-01").expect("Date format problem!"),
+    ).expect("NaiveDate not fix");
+    let yesterday = business_calendar.advance(date, -1);
+    let dplus2 = business_calendar.advance(date, 2);
+
+    let new_event1 = NewEvent {
+        ticker_id: ticker.id,
+        date: date,
+        ex_date: date,
+        liquidation_date: dplus2,
+        type_: "DIVIDEND",
+        factor: BigDecimal::from_str("-2.5").unwrap(),
+        strike: None
+    };
+
+    insert_into(events::dsl::events)
+        .values(&new_event1)
+        .returning(Event::as_returning())
+        .get_result(connection)
+        .expect("Failed to insert quote!");
+
+    let new_event2 = NewEvent {
+        ticker_id: ticker.id,
+        date: date,
+        ex_date: date,
+        liquidation_date: dplus2,
+        type_: "INVERSE_SPLIT",
+        factor: BigDecimal::from_str("2.0").unwrap(),
+        strike: None
+    };
+
+    insert_into(events::dsl::events)
+        .values(&new_event2)
+        .returning(Event::as_returning())
+        .get_result(connection)
+        .expect("Failed to insert quote!");
+
+    create_quote(connection,
+        ticker.id,
+        yesterday,
+        BigDecimal::from_str("5.0").unwrap(),
+        BigDecimal::from_str("1.0").unwrap(),
+        BigDecimal::from_str("1.0").unwrap()
+    );
+
+    let quote_params = QuoteParams {
+        symbol: String::from_str("PETR4").unwrap(),
+        date: date, 
+        close: BigDecimal::from_str("22.5").unwrap(),
+        open: Some(BigDecimal::from_str("1.0").unwrap()),
+        high: Some(BigDecimal::from_str("1.0").unwrap()),
+        low: Some(BigDecimal::from_str("1.0").unwrap()),
+        average: Some(BigDecimal::from_str("1.0").unwrap()),
+        ask: Some(BigDecimal::from_str("1.0").unwrap()),
+        bid: Some(BigDecimal::from_str("1.0").unwrap()),
+        adjust: Some(BigDecimal::from_str("1.0").unwrap()),
+        volume: Some(BigDecimal::from_str("1.0").unwrap()),
+        trades: Some(BigDecimal::from_str("1.0").unwrap()),
+    };
+
+    let mut service = RentabilityService::new(connection, business_calendar);
+    let new_quote: NewQuote = service.quote_rentability(&ticker, quote_params);
+
+    assert_eq!(new_quote.close, BigDecimal::from_str("22.5").unwrap());
+    assert_eq!(new_quote.adjust_close, BigDecimal::from_str("17.5").unwrap());
+    assert_eq!(new_quote.daily_factor, BigDecimal::from_str("1.75").unwrap());
+    assert_eq!(new_quote.accumulated_factor, BigDecimal::from_str("1.75").unwrap());
+    
+    clean_database(connection);
+}
+
+#[test]
+fn test_create_quote_with_splits_normalize_yesterday_close_past() {
+    let connection = &mut db_connection();
+    clean_database(connection);
+    let ticker = setup_data(connection);
+
+    let business_calendar = &mut BusinessCalendar::new(
+        String::from_str("2024-03-01").expect("Date format problem!"),
+        String::from_str("2024-03-10").expect("Date format problem!"),
+        Vec::new()
+    );
+
+    let date = NaiveDate::from_str(
+        &String::from_str("2024-03-01").expect("Date format problem!"),
+    ).expect("NaiveDate not fix");
+    let yesterday = business_calendar.advance(date, -1);
+    let dplus2 = business_calendar.advance(date, 2);
+
+    let new_event1 = NewEvent {
+        ticker_id: ticker.id,
+        date: date,
+        ex_date: date,
+        liquidation_date: dplus2,
+        type_: "DIVIDEND",
+        factor: BigDecimal::from_str("-2.5").unwrap(),
+        strike: None
+    };
+
+    insert_into(events::dsl::events)
+        .values(&new_event1)
+        .returning(Event::as_returning())
+        .get_result(connection)
+        .expect("Failed to insert quote!");
+
+    let new_event2 = NewEvent {
+        ticker_id: ticker.id,
+        date: date,
+        ex_date: date,
+        liquidation_date: dplus2,
+        type_: "SPLIT",
+        factor: BigDecimal::from_str("2.0").unwrap(),
+        strike: None
+    };
+
+    insert_into(events::dsl::events)
+        .values(&new_event2)
+        .returning(Event::as_returning())
+        .get_result(connection)
+        .expect("Failed to insert quote!");
+
+    create_quote(connection,
+        ticker.id,
+        yesterday,
+        BigDecimal::from_str("20.0").unwrap(),
+        BigDecimal::from_str("1.0").unwrap(),
+        BigDecimal::from_str("1.0").unwrap()
+    );
+
+    let quote_params = QuoteParams {
+        symbol: String::from_str("PETR4").unwrap(),
+        date: date, 
+        close: BigDecimal::from_str("22.5").unwrap(),
+        open: Some(BigDecimal::from_str("1.0").unwrap()),
+        high: Some(BigDecimal::from_str("1.0").unwrap()),
+        low: Some(BigDecimal::from_str("1.0").unwrap()),
+        average: Some(BigDecimal::from_str("1.0").unwrap()),
+        ask: Some(BigDecimal::from_str("1.0").unwrap()),
+        bid: Some(BigDecimal::from_str("1.0").unwrap()),
+        adjust: Some(BigDecimal::from_str("1.0").unwrap()),
+        volume: Some(BigDecimal::from_str("1.0").unwrap()),
+        trades: Some(BigDecimal::from_str("1.0").unwrap()),
+    };
+
+    let mut service = RentabilityService::new(connection, business_calendar);
+    let new_quote: NewQuote = service.quote_rentability(&ticker, quote_params);
+
+    assert_eq!(new_quote.close, BigDecimal::from_str("22.5").unwrap());
+    assert_eq!(new_quote.adjust_close, BigDecimal::from_str("21.25").unwrap());
+    assert_eq!(new_quote.daily_factor, BigDecimal::from_str("2.125").unwrap());
+    assert_eq!(new_quote.accumulated_factor, BigDecimal::from_str("2.125").unwrap());
+    
+    clean_database(connection);
+}
+
+#[test]
+fn test_create_quote_with_inverse_splits_normalize_yesterday_close_past() {
+    let connection = &mut db_connection();
+    clean_database(connection);
+    let ticker = setup_data(connection);
+
+    let business_calendar = &mut BusinessCalendar::new(
+        String::from_str("2024-03-01").expect("Date format problem!"),
+        String::from_str("2024-03-10").expect("Date format problem!"),
+        Vec::new()
+    );
+
+    let date = NaiveDate::from_str(
+        &String::from_str("2024-03-01").expect("Date format problem!"),
+    ).expect("NaiveDate not fix");
+    let yesterday = business_calendar.advance(date, -1);
+    let dplus2 = business_calendar.advance(date, 2);
+
+    let new_event1 = NewEvent {
+        ticker_id: ticker.id,
+        date: date,
+        ex_date: date,
+        liquidation_date: dplus2,
+        type_: "DIVIDEND",
+        factor: BigDecimal::from_str("-2.5").unwrap(),
+        strike: None
+    };
+
+    insert_into(events::dsl::events)
+        .values(&new_event1)
+        .returning(Event::as_returning())
+        .get_result(connection)
+        .expect("Failed to insert quote!");
+
+    let new_event2 = NewEvent {
+        ticker_id: ticker.id,
+        date: date,
+        ex_date: date,
+        liquidation_date: dplus2,
+        type_: "INVERSE_SPLIT",
+        factor: BigDecimal::from_str("2.0").unwrap(),
+        strike: None
+    };
+
+    insert_into(events::dsl::events)
+        .values(&new_event2)
+        .returning(Event::as_returning())
+        .get_result(connection)
+        .expect("Failed to insert quote!");
+
+    create_quote(connection,
+        ticker.id,
+        yesterday,
+        BigDecimal::from_str("5.0").unwrap(),
+        BigDecimal::from_str("1.0").unwrap(),
+        BigDecimal::from_str("1.0").unwrap()
+    );
+
+    let quote_params = QuoteParams {
+        symbol: String::from_str("PETR4").unwrap(),
+        date: date, 
+        close: BigDecimal::from_str("22.5").unwrap(),
+        open: Some(BigDecimal::from_str("1.0").unwrap()),
+        high: Some(BigDecimal::from_str("1.0").unwrap()),
+        low: Some(BigDecimal::from_str("1.0").unwrap()),
+        average: Some(BigDecimal::from_str("1.0").unwrap()),
+        ask: Some(BigDecimal::from_str("1.0").unwrap()),
+        bid: Some(BigDecimal::from_str("1.0").unwrap()),
+        adjust: Some(BigDecimal::from_str("1.0").unwrap()),
+        volume: Some(BigDecimal::from_str("1.0").unwrap()),
+        trades: Some(BigDecimal::from_str("1.0").unwrap()),
+    };
+
+    let mut service = RentabilityService::new(connection, business_calendar);
+    let new_quote: NewQuote = service.quote_rentability(&ticker, quote_params);
+
+    assert_eq!(new_quote.close, BigDecimal::from_str("22.5").unwrap());
+    assert_eq!(new_quote.adjust_close, BigDecimal::from_str("17.5").unwrap());
+    assert_eq!(new_quote.daily_factor, BigDecimal::from_str("1.75").unwrap());
+    assert_eq!(new_quote.accumulated_factor, BigDecimal::from_str("1.75").unwrap());
     
     clean_database(connection);
 }
