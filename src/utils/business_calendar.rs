@@ -106,7 +106,7 @@ impl BusinessCalendar {
         return self.business_dates_index.get(&date_str).unwrap();
     }
 
-    pub fn advance(&mut self, date: NaiveDate, n: i64) -> String {
+    pub fn advance_str(&mut self, date: NaiveDate, n: i64) -> String {
         self.range_check(date);
         let index: i64 = *self.adjusted_date_index(date) as i64 + n;
         if index < 0 {
@@ -114,14 +114,18 @@ impl BusinessCalendar {
             let previous_date = start_date_obj + Duration::days(n - 365);
             let new_start_date_str = previous_date.pred_opt().unwrap().format("%Y-%m-%d").to_string();
             self.build(new_start_date_str, self.end_date.clone(), self.holidays.clone());
-            return self.advance(date, n)
+            return self.advance_str(date, n)
         } else if index as usize >= self.business_dates.len() {
             let end_date_obj = NaiveDate::parse_from_str(&self.end_date, "%Y-%m-%d").unwrap();
             let next_date = end_date_obj + Duration::days(n + 365);
             let new_end_date_str = next_date.succ_opt().unwrap().format("%Y-%m-%d").to_string();
             self.build(self.start_date.clone(), new_end_date_str, self.holidays.clone());
-            return self.advance(date, n)
+            return self.advance_str(date, n)
         }
         return self.business_dates[index as usize].clone();
+    }
+
+    pub fn advance(&mut self, date: NaiveDate, n: i64) -> NaiveDate {
+        return NaiveDate::parse_from_str(&self.advance_str(date, n), "%Y-%m-%d").unwrap();
     }
 }

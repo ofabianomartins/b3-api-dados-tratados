@@ -52,7 +52,7 @@ fn test_adjust_one_year_ago() {
     );
 
     assert_eq!(
-        business_calendar.advance(
+        business_calendar.advance_str(
             NaiveDate::parse_from_str("2023-03-02", "%Y-%m-%d").unwrap(),
             0
         ),
@@ -73,7 +73,7 @@ fn test_adjust_one_year_to_the_future() {
     );
 
     assert_eq!(
-        business_calendar.advance(
+        business_calendar.advance_str(
             NaiveDate::parse_from_str("2025-03-02", "%Y-%m-%d").unwrap(),
             0
         ),
