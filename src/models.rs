@@ -90,6 +90,7 @@ pub struct Ticker {
     pub id: i32,
     pub symbol: String,
     pub security_type: String,
+    pub unit: String,
     pub creation_date: NaiveDate,
     pub company_id: i32,
     pub currency_id: i32,
@@ -102,6 +103,7 @@ pub struct Ticker {
 pub struct NewTicker<'a> {
     pub symbol: &'a str,
     pub security_type: &'a str,
+    pub unit: &'a str,
     pub creation_date: NaiveDate,
     pub company_id: i32,
     pub currency_id: i32,
@@ -252,7 +254,7 @@ pub struct NewIndicatorValue {
     pub close: BigDecimal
 }
 
-#[derive(Debug, Queryable, Selectable, Identifiable, Serialize, Deserialize)]
+#[derive(Debug, Clone, Queryable, Selectable, Identifiable, Serialize, Deserialize)]
 #[diesel(table_name = events)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Event {
@@ -268,12 +270,12 @@ pub struct Event {
 
 #[derive(Debug, Serialize, Deserialize, Insertable)]
 #[diesel(table_name = events)]
-pub struct NewEvent {
+pub struct NewEvent<'a> {
     pub ticker_id: i32,
     pub date: NaiveDate,
     pub ex_date: NaiveDate,
     pub liquidation_date: NaiveDate,
-    pub type_: String,
+    pub type_: &'a str,
     pub factor: BigDecimal,
     pub strike: Option<BigDecimal>
 }

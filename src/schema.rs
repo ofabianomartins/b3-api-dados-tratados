@@ -238,6 +238,7 @@ diesel::table! {
         created_at -> Timestamptz,
         updated_at -> Timestamptz,
         segment_id -> Int4,
+        unit -> Varchar,
     }
 }
 
