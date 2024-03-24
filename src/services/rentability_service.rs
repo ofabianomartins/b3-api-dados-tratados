@@ -136,10 +136,31 @@ impl RentabilityService<'_> {
     }
 
     fn get_daily_factor(&mut self, yesterday_close: BigDecimal, today_close: BigDecimal, unit: &str) -> BigDecimal {
-        if unit == "INDEX_NUMBER" {
+
+        if unit == "DAILY_FACTOR" {
+            return today_close;
+//        } else if unit == "MONTHLY_RATE" {
+//            return BigDecimal::from_str("1.0").unwrap() + (
+//                today_close / BigDecimal::from_str("100.0").unwrap()
+//            ) ** (1.0/22);
+//        } else if unit == "YEARLY_RATE_252_DAYS" {
+//            return BigDecimal::from_str("1.0").unwrap() + (
+//                today_close / BigDecimal::from_str("100.0").unwrap()
+//            ) ** (1.0/252);
+//        } else if unit == "YEARLY_RATE_360_DAYS" {
+//            return BigDecimal::from_str("1.0").unwrap() + (
+//                today_close / BigDecimal::from_str("100.0").unwrap()
+//            ). (1.0/360);
+        } else if unit == "ACCUMULATED_FACTOR" {
+            return today_close / yesterday_close;
+        } else if unit == "DAILY_RATE" {
+            return BigDecimal::from_str("1.0").unwrap() + (
+                today_close / BigDecimal::from_str("100.0").unwrap()
+            );
+        } else if unit == "INDEX_NUMBER" {
             return BigDecimal::from_str("1.0").unwrap() + (
                 today_close / yesterday_close + BigDecimal::from_str("-1.0").unwrap()
-            )
+            );
         } else {
             return BigDecimal::from_str("1.0").unwrap();
         }
