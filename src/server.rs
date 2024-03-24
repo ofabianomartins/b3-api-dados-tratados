@@ -7,6 +7,7 @@ mod controllers;
 mod models;
 mod schema;
 mod connections;
+mod services;
 mod utils;
 
 

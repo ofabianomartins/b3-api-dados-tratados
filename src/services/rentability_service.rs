@@ -68,47 +68,37 @@ impl RentabilityService<'_> {
             let daily_factor = self.get_daily_factor(previous_quote.close, quote_params.close.clone());
             let accumulated_factor: BigDecimal = previous_quote.accumulated_factor * daily_factor.clone();
 
-            let yesterday_str = self.business_calendar.advance(date, -1);
-            let yesterday = NaiveDate::parse_from_str(&yesterday_str, "%Y-%m-%d").unwrap();
+            let yesterday = self.business_calendar.advance(date, -1);
             let change_24hrs_value = self.get_rentability(ticker_id, accumulated_factor.clone(), yesterday);
 
-            let fivedays_str = self.business_calendar.advance(date, -5);
-            let fivedays = NaiveDate::parse_from_str(&fivedays_str, "%Y-%m-%d").unwrap();
+            let fivedays = self.business_calendar.advance(date, -5);
             let change_5days_value = self.get_rentability(ticker_id, accumulated_factor.clone(), fivedays);
 
-            let sevendays_str = self.business_calendar.advance(date, -7);
-            let sevendays = NaiveDate::parse_from_str(&sevendays_str, "%Y-%m-%d").unwrap();
+            let sevendays = self.business_calendar.advance(date, -7);
             let change_7days_value = self.get_rentability(ticker_id, accumulated_factor.clone(), sevendays);
 
             let month_begin = NaiveDate::from_ymd_opt(date.year(), date.month0(), 01).unwrap();
             let change_month_value = self.get_rentability(ticker_id, accumulated_factor.clone(), month_begin);
 
-            let onemonth_str = self.business_calendar.advance(date, -30);
-            let onemonth = NaiveDate::parse_from_str(&onemonth_str, "%Y-%m-%d").unwrap();
+            let onemonth = self.business_calendar.advance(date, -30);
             let change_1month_value = self.get_rentability(ticker_id, accumulated_factor.clone(), onemonth);
 
-            let twelvemonth_str = self.business_calendar.advance(date, -365);
-            let twelvemonth = NaiveDate::parse_from_str(&twelvemonth_str, "%Y-%m-%d").unwrap();
+            let twelvemonth = self.business_calendar.advance(date, -365);
             let change_12month_value = self.get_rentability(ticker_id, accumulated_factor.clone(), twelvemonth);
 
-            let oneyear_str = self.business_calendar.advance(date, -365);
-            let oneyear = NaiveDate::parse_from_str(&oneyear_str, "%Y-%m-%d").unwrap();
+            let oneyear = self.business_calendar.advance(date, -365);
             let change_1year_value = self.get_rentability(ticker_id, accumulated_factor.clone(), oneyear);
 
-            let twoyear_str = self.business_calendar.advance(date, -365*2);
-            let twoyear = NaiveDate::parse_from_str(&twoyear_str, "%Y-%m-%d").unwrap();
+            let twoyear = self.business_calendar.advance(date, -365*2);
             let change_2year_value = self.get_rentability(ticker_id, accumulated_factor.clone(), twoyear);
 
-            let threeyear_str = self.business_calendar.advance(date, -365*3);
-            let threeyear = NaiveDate::parse_from_str(&threeyear_str, "%Y-%m-%d").unwrap();
+            let threeyear = self.business_calendar.advance(date, -365*3);
             let change_3year_value = self.get_rentability(ticker_id, accumulated_factor.clone(), threeyear);
 
-            let fouryear_str = self.business_calendar.advance(date, -365*4);
-            let fouryear = NaiveDate::parse_from_str(&fouryear_str, "%Y-%m-%d").unwrap();
+            let fouryear = self.business_calendar.advance(date, -365*4);
             let change_4year_value = self.get_rentability(ticker_id, accumulated_factor.clone(), fouryear);
 
-            let fiveyear_str = self.business_calendar.advance(date, -365*3);
-            let fiveyear = NaiveDate::parse_from_str(&fiveyear_str, "%Y-%m-%d").unwrap();
+            let fiveyear = self.business_calendar.advance(date, -365*3);
             let change_5year_value = self.get_rentability(ticker_id, accumulated_factor.clone(), fiveyear);
 
             let year = NaiveDate::from_ymd_opt(date.year(), 01, 01).unwrap();
