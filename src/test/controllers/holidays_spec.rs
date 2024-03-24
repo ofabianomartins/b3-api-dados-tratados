@@ -6,7 +6,6 @@ use rocket::serde::json;
 
 use diesel::prelude::*;
 use diesel::insert_into;
-use diesel::delete;
 
 use chrono::NaiveDate;
 
@@ -19,18 +18,14 @@ use crate::models::Calendar;
 use crate::models::NewCalendar;
 use crate::schema::calendars::dsl::*;
 
+use crate::test::clean_database;
+
 #[test]
 fn test_get_holidays() {
     // Setup: Insert sample data into the test database
     let connection = &mut db_connection();
 
-    delete(holidays)
-        .execute(connection)
-        .expect("Failed to delete calendars");
-
-    delete(calendars)
-        .execute(connection)
-        .expect("Failed to delete calendars");
+    clean_database(connection);
 
     let calendar = NewCalendar { name: "Calendar 3", code: "calendar3" };
     let result_calendar = insert_into(calendars)
@@ -64,12 +59,7 @@ fn test_get_holidays() {
     let holidays_list: Vec<Holiday> = json::from_str(&test).expect("Failed to read JSON");
     assert_eq!(holidays_list.len(), 1); // Expecting three calendars in the response
     
-    delete(holidays)
-        .execute(connection)
-        .expect("Failed to delete calendars");
-    delete(calendars)
-        .execute(connection)
-        .expect("Failed to delete calendars");
+    clean_database(connection);
 }
 
 #[test]
@@ -77,13 +67,7 @@ fn test_delete_holiday() {
     // Setup: Insert sample data into the test database
     let conn = &mut db_connection();
 
-    delete(holidays)
-        .execute(conn)
-        .expect("Failed to delete calendars");
-
-    delete(calendars)
-        .execute(conn)
-        .expect("Failed to delete calendars");
+    clean_database(conn);
 
     let new_calendar = NewCalendar { name: "Calendar 3", code: "calendar3" };
     let result_calendar = insert_into(calendars)
@@ -120,12 +104,7 @@ fn test_delete_holiday() {
     assert_eq!(response.status(), Status::NoContent);
     assert_eq!(result.len(), 0); // Expecting three calendars in the response
 
-    delete(holidays)
-        .execute(conn)
-        .expect("Failed to delete calendars");
-    delete(calendars)
-        .execute(conn)
-        .expect("Failed to delete calendars");
+    clean_database(conn);
 }
 
 #[test]
@@ -134,9 +113,7 @@ fn test_post_holidays() {
     
     let connection = &mut db_connection();
 
-    delete(calendars)
-        .execute(connection)
-        .expect("Failed to delete calendars");
+    clean_database(connection);
 
     let calendar = NewCalendar { name: "Calendar 3", code: "calendar3" };
     let result_calendar = insert_into(calendars)
@@ -163,12 +140,6 @@ fn test_post_holidays() {
     assert_eq!(response.status(), Status::Created);
     // assert_eq!(response.status(), Status::Created);
 
-    delete(holidays)
-        .execute(connection)
-        .expect("Failed to delete holidays");
-
-    delete(calendars)
-        .execute(connection)
-        .expect("Failed to delete calendars");
+    clean_database(connection);
 }
 

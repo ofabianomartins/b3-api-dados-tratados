@@ -6,20 +6,19 @@ use rocket::serde::json;
 
 use diesel::prelude::*;
 use diesel::insert_into;
-use diesel::delete;
 
 use crate::models::Currency;
 use crate::models::NewCurrency;
 use crate::schema::currencies::dsl::*;
 use crate::connections::db_connection;
 
+use crate::test::clean_database;
+
 #[test]
 fn test_get_currencies() {
     let connection = &mut db_connection();
 
-    delete(currencies)
-        .execute(connection)
-        .expect("Failed to delete calendars");
+    clean_database(connection);
 
     let currency = NewCurrency { name: "Calendar 2", code: "test_calendar2" };
     insert_into(currencies)
@@ -41,9 +40,7 @@ fn test_get_currencies() {
     let currencies_list: Vec<Currency> = json::from_str(&test).expect("Failed to read JSON");
     assert_eq!(currencies_list.len(), 1); // Expecting three calendars in the response
     
-    delete(currencies)
-        .execute(connection)
-        .expect("Failed to delete currencies");
+    clean_database(connection);
 }
 
 #[test]
@@ -52,9 +49,7 @@ fn test_delete_currency() {
     
     let connection = &mut db_connection();
 
-    delete(currencies)
-        .execute(connection)
-        .expect("Failed to delete currencies");
+    clean_database(connection);
 
     let currency = NewCurrency { name: "Calendar 2", code: "test_calendar2" };
     let result_currency = insert_into(currencies)
@@ -79,18 +74,14 @@ fn test_delete_currency() {
     assert_eq!(response.status(), Status::NoContent);
     assert_eq!(result.len(), 0); // Expecting three calendars in the response
 
-    delete(currencies)
-        .execute(connection)
-        .expect("Failed to delete currencies");
+    clean_database(connection);
 }
 
 #[test]
 fn test_post_currencies() {
     let connection = &mut db_connection();
 
-    delete(currencies)
-        .execute(connection)
-        .expect("Failed to delete calendars");
+    clean_database(connection);
 
     // Setup: Define the data for the new calendar
     let new_currency = NewCurrency {
@@ -109,8 +100,6 @@ fn test_post_currencies() {
     // Assert: Check if the response contains the expected data
     assert_eq!(response.status(), Status::Created);
 
-    delete(currencies)
-        .execute(connection)
-        .expect("Failed to delete calendars");
+    clean_database(connection);
 }
 
