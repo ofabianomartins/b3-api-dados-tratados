@@ -7,64 +7,69 @@ use rocket::serde::json;
 use diesel::prelude::*;
 use diesel::insert_into;
 
-use crate::models::Company;
-use crate::models::NewCompany;
-use crate::schema::companies::dsl::*;
+use crate::models::Indicator;
+use crate::models::NewIndicator;
+use crate::schema::indicators::dsl::*;
 use crate::connections::db_connection;
 
 use crate::test::clean_database;
 
-fn setup_data(conn: &mut PgConnection) -> Company {
-    let new_company = NewCompany { name: "Calendar 2", company_type: "DEFAULT", cnpj: "00.000.000/0001-00" };
-    return insert_into(companies)
-        .values(&new_company)
-        .returning(Company::as_returning())
+fn setup_data(conn: &mut PgConnection) -> Indicator {
+    let new_indicator = NewIndicator {
+        name: "Calendar 2",
+        indicator_type: "DEFAULT",
+        symbol: "CODE", 
+        description: "Description of indicators"
+    };
+    return insert_into(indicators)
+        .values(&new_indicator)
+        .returning(Indicator::as_returning())
         .get_result(conn)
         .expect("Failed to insert sample data into the database");
 }
 
 #[test]
-fn test_get_companies() {
+fn test_get_indicators() {
     let connection = &mut db_connection();
 
     clean_database(connection);
     setup_data(connection);
 
     let client = Client::tracked(rocket()).expect("valid rocket instance");
-    let response = client.get("/api/companies")
+    let response = client.get("/api/indicators")
         .header(ContentType::JSON)
         .dispatch();
 
     assert_eq!(response.status(), Status::Ok);
 
     let test = response.into_string().unwrap();
-    let companies_list: Vec<Company> = json::from_str(&test).expect("Failed to read JSON");
-    assert_eq!(companies_list.len(), 1); // Expecting three calendars in the response
+    let indicators_list: Vec<Indicator> = json::from_str(&test).expect("Failed to read JSON");
+    assert_eq!(indicators_list.len(), 1); // Expecting three calendars in the response
     
     clean_database(connection);
 }
 
 #[test]
-fn test_delete_company() {
+fn test_delete_indicator() {
     // Setup: Insert sample data into the test database
     
     let connection = &mut db_connection();
 
     clean_database(connection);
 
-    let result_company = setup_data(connection);
+    let result_indicator = setup_data(connection);
 
     // Action: Make a request to the route
     let client = Client::tracked(rocket()).expect("valid rocket instance");
-    let response = client.delete(format!("/api/companies/{}", result_company.id ))
+    let response = client.delete(format!("/api/indicators/{}", result_indicator.id ))
         .header(ContentType::JSON)
         .dispatch();
 
-    let result = companies
-        .find(result_company.id)
-        .select(Company::as_select())
-        .load(connection)
-        .expect("Error loading companies");
+    let result = indicators
+        .find(result_indicator.id)
+        .select(Indicator::as_select())
+            .load(connection)
+        .expect("Error loading indicators");
 
     // Assert: Check if the response contains the expected data
     assert_eq!(response.status(), Status::NoContent);
@@ -74,22 +79,23 @@ fn test_delete_company() {
 }
 
 #[test]
-fn test_post_companies() {
+fn test_post_indicators() {
     let connection = &mut db_connection();
 
     clean_database(connection);
 
-    let new_company = NewCompany { 
+    let new_indicator = NewIndicator { 
         name: "Calendar 2", 
-        company_type: "DEFAULT", 
-        cnpj: "00.000.000/0001-00" 
+        indicator_type: "DEFAULT", 
+        symbol: "CODE",
+        description: "Description of indicators"
     };
 
     // Action: Make a request to the route
     let client = Client::tracked(rocket()).expect("valid rocket instance");
-    let response = client.post("/api/companies")
+    let response = client.post("/api/indicators")
         .header(ContentType::JSON)
-        .body(json::to_string(&new_company).unwrap())
+        .body(json::to_string(&new_indicator).unwrap())
         .dispatch();
 
     // Assert: Check if the response contains the expected data

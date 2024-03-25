@@ -1,4 +1,5 @@
 pub mod calendars;
+pub mod indicators;
 pub mod companies;
 pub mod holidays;
 pub mod currencies;

@@ -40,7 +40,10 @@ fn rocket() -> Rocket<Build> {
                 controllers::currencies::destroy,
                 controllers::companies::index,
                 controllers::companies::create,
-                controllers::companies::destroy
+                controllers::companies::destroy,
+                controllers::indicators::index,
+                controllers::indicators::create,
+                controllers::indicators::destroy
             ]
         )
 }

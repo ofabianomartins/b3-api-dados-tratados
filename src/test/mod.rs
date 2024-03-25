@@ -16,6 +16,7 @@ use crate::schema::segments::dsl::*;
 use crate::schema::subsectors::dsl::*;
 use crate::schema::sectors::dsl::*;
 use crate::schema::holidays::dsl::*;
+use crate::schema::indicators::dsl::*;
 
 pub fn clean_database(conn: &mut PgConnection) {
     delete(quotes)
@@ -35,6 +36,10 @@ pub fn clean_database(conn: &mut PgConnection) {
         .expect("Failed to delete holidays");
 
     delete(calendars)
+        .execute(conn)
+        .expect("Failed to delete calendars");
+
+    delete(indicators)
         .execute(conn)
         .expect("Failed to delete calendars");
 

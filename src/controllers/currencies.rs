@@ -19,7 +19,7 @@ pub fn index() -> Json<Vec<Currency>> {
     let results = currencies
         .select(Currency::as_select())
         .load(conn)
-        .expect("Error loading calendars");
+        .expect("Error loading currencies");
     return Json(results);
 }
 
@@ -28,7 +28,7 @@ pub fn destroy(currency_id: i32) -> NoContent {
     let conn = &mut db_connection();
     delete(currencies.find(currency_id))
         .execute(conn)
-        .expect("Error loading calendars");
+        .expect("Error loading currencies");
     return NoContent;
 }
 
