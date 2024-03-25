@@ -9,13 +9,18 @@ mod schema;
 mod connections;
 mod services;
 mod utils;
+mod cors;
 
+use crate::cors::Cors;
+use crate::cors::all_options;
 
 #[launch]
 fn rocket() -> Rocket<Build> {
     rocket::build()
+        .attach(Cors)
         .mount("/api", 
             routes![
+                all_options,
                 controllers::main::index,
                 controllers::theory_portfolio_transactions::index,
                 controllers::theory_portfolio_transactions::create,
