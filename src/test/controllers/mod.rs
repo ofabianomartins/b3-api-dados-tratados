@@ -6,3 +6,4 @@ pub mod indicators_spec;
 pub mod main_spec;
 pub mod sectors_spec;
 pub mod subsectors_spec;
+pub mod segments_spec;

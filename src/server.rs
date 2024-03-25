@@ -49,7 +49,10 @@ fn rocket() -> Rocket<Build> {
                 controllers::sectors::destroy,
                 controllers::subsectors::index,
                 controllers::subsectors::create,
-                controllers::subsectors::destroy
+                controllers::subsectors::destroy,
+                controllers::segments::index,
+                controllers::segments::create,
+                controllers::segments::destroy
             ]
         )
 }
