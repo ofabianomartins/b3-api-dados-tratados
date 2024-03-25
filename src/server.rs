@@ -43,7 +43,13 @@ fn rocket() -> Rocket<Build> {
                 controllers::companies::destroy,
                 controllers::indicators::index,
                 controllers::indicators::create,
-                controllers::indicators::destroy
+                controllers::indicators::destroy,
+                controllers::sectors::index,
+                controllers::sectors::create,
+                controllers::sectors::destroy,
+                controllers::subsectors::index,
+                controllers::subsectors::create,
+                controllers::subsectors::destroy
             ]
         )
 }

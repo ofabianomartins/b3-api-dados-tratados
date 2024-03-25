@@ -4,3 +4,5 @@ pub mod currencies_spec;
 pub mod companies_spec;
 pub mod indicators_spec;
 pub mod main_spec;
+pub mod sectors_spec;
+pub mod subsectors_spec;
