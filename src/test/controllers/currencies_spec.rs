@@ -75,6 +75,32 @@ fn test_show_currency() {
 }
 
 #[test]
+fn test_post_currencies() {
+    let connection = &mut db_connection();
+
+    clean_database(connection);
+
+    // Setup: Define the data for the new calendar
+    let new_currency = NewCurrency {
+        // Define the fields of the new calendar here
+        name: "Test Calendar",
+        code: "test_calendar",
+    };
+
+    // Action: Make a request to the route
+    let client = Client::tracked(rocket()).expect("valid rocket instance");
+    let response = client.post("/api/currencies")
+        .header(ContentType::JSON)
+        .body(json::to_string(&new_currency).unwrap())
+        .dispatch();
+
+    // Assert: Check if the response contains the expected data
+    assert_eq!(response.status(), Status::Created);
+
+    clean_database(connection);
+}
+
+#[test]
 fn test_update_currency() {
     // Setup: Insert sample data into the test database
     
@@ -147,29 +173,4 @@ fn test_delete_currency() {
     clean_database(connection);
 }
 
-#[test]
-fn test_post_currencies() {
-    let connection = &mut db_connection();
-
-    clean_database(connection);
-
-    // Setup: Define the data for the new calendar
-    let new_currency = NewCurrency {
-        // Define the fields of the new calendar here
-        name: "Test Calendar",
-        code: "test_calendar",
-    };
-
-    // Action: Make a request to the route
-    let client = Client::tracked(rocket()).expect("valid rocket instance");
-    let response = client.post("/api/currencies")
-        .header(ContentType::JSON)
-        .body(json::to_string(&new_currency).unwrap())
-        .dispatch();
-
-    // Assert: Check if the response contains the expected data
-    assert_eq!(response.status(), Status::Created);
-
-    clean_database(connection);
-}
 

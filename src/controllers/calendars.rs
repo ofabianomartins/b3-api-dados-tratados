@@ -4,8 +4,10 @@ use rocket::serde::json::Json;
 
 use diesel::SelectableHelper;
 use diesel::RunQueryDsl;
+use diesel::ExpressionMethods;
 use diesel::query_dsl::QueryDsl;
 use diesel::insert_into;
+use diesel::update;
 use diesel::delete;
 
 use crate::connections::db_connection;
@@ -23,13 +25,19 @@ pub fn index() -> Json<Vec<Calendar>> {
     return Json(results);
 }
 
-#[delete("/calendars/<calendar_id>")]
-pub fn destroy(calendar_id: i32) -> NoContent {
+#[derive(Responder)]
+#[response(status = 200, content_type = "json")]
+pub struct ShowJson(Json<Calendar>);
+
+#[get("/calendars/<calendar_id>")]
+pub fn show(calendar_id: i32) -> ShowJson {
     let conn = &mut db_connection();
-    delete(calendars.find(calendar_id))
-        .execute(conn)
+    let result = calendars
+        .find(calendar_id)
+        .select(Calendar::as_select())
+        .first(conn)
         .expect("Error loading calendars");
-    return NoContent;
+    return ShowJson(Json(result));
 }
 
 #[derive(Responder)]
@@ -48,3 +56,35 @@ pub async fn create(new_calendar: Json<NewCalendar<'_>>) -> CreatedJson {
     return CreatedJson(Json(result));
 }
 
+#[derive(Responder)]
+#[response(status = 200, content_type = "json")]
+pub struct UpdatedJson(Json<Calendar>);
+
+#[put("/calendars/<calendar_id>", format="json", data="<calendar>")]
+pub fn update_action(calendar_id: i32, calendar: Json<NewCalendar<'_>>) -> UpdatedJson {
+    let conn = &mut db_connection();
+    update(calendars.find(calendar_id))
+        .set((
+            name.eq(calendar.name),
+            code.eq(calendar.code)
+        ))
+        .returning(Calendar::as_returning())
+        .execute(conn)
+        .expect("Error loading calendars");
+
+    let result = calendars
+        .find(calendar_id)
+        .select(Calendar::as_select())
+        .first(conn)
+        .expect("Error loading calendars");
+    return UpdatedJson(Json(result));
+}
+
+#[delete("/calendars/<calendar_id>")]
+pub fn destroy(calendar_id: i32) -> NoContent {
+    let conn = &mut db_connection();
+    delete(calendars.find(calendar_id))
+        .execute(conn)
+        .expect("Error loading calendars");
+    return NoContent;
+}
