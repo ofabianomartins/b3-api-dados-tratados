@@ -44,6 +44,45 @@ fn test_get_currencies() {
 }
 
 #[test]
+fn test_update_currency() {
+    // Setup: Insert sample data into the test database
+    
+    let connection = &mut db_connection();
+
+    clean_database(connection);
+
+    let currency = NewCurrency { name: "Calendar 2", code: "test_calendar" };
+    let result_currency = insert_into(currencies)
+        .values(&currency)
+        .returning(Currency::as_returning())
+        .get_result(connection)
+        .expect("Failed to insert sample data into the database");
+
+    let new_currency = NewCurrency { name: "Calendar 2 updated", code: "test_calendar2" };
+
+    // Action: Make a request to the route
+    let client = Client::tracked(rocket()).expect("valid rocket instance");
+    let response = client.put(format!("/api/currencies/{}", result_currency.id ))
+        .header(ContentType::JSON)
+        .body(json::to_string(&new_currency).unwrap())
+        .dispatch();
+
+    let result = currencies
+        .find(result_currency.id)
+        .select(Currency::as_select())
+        .load(connection)
+        .expect("Error loading calendars");
+
+    // Assert: Check if the response contains the expected data
+    assert_eq!(response.status(), Status::Ok);
+    assert_eq!(result.len(), 1); // Expecting three calendars in the response
+    assert_eq!(result[0].name, "Calendar 2 updated"); // Expecting three calendars in the response
+    assert_eq!(result[0].code, "test_calendar2"); // Expecting three calendars in the response
+
+    clean_database(connection);
+}
+
+#[test]
 fn test_delete_currency() {
     // Setup: Insert sample data into the test database
     
