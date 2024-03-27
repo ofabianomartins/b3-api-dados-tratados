@@ -43,6 +43,21 @@ pub async fn create(new_currency: Json<NewCurrency<'_>>) -> CreatedJson {
 
 #[derive(Responder)]
 #[response(status = 200, content_type = "json")]
+pub struct ShowJson(Json<Currency>);
+
+#[get("/currencies/<currency_id>")]
+pub fn show(currency_id: i32) -> ShowJson {
+    let conn = &mut db_connection();
+    let result = currencies
+        .find(currency_id)
+        .select(Currency::as_select())
+        .first(conn)
+        .expect("Error loading currencies");
+    return ShowJson(Json(result));
+}
+
+#[derive(Responder)]
+#[response(status = 200, content_type = "json")]
 pub struct UpdatedJson(Json<Currency>);
 
 #[put("/currencies/<currency_id>", format="json", data="<currency>")]
