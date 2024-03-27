@@ -5,6 +5,7 @@ import {
   cilCalculator,
   cilCursor,
   cilDescription,
+  cilMoney,
   cilNotes,
   cilViewModule,
   cilCalendar,
@@ -40,6 +41,12 @@ const _nav = [
     name: 'Sectors',
     to: '/sectors',
     icon: <CIcon icon={cilViewModule} customClassName="nav-icon" />,
+  },
+  {
+    component: CNavItem,
+    name: 'Currencies',
+    to: '/currencies',
+    icon: <CIcon icon={cilMoney} customClassName="nav-icon" />,
   },
   {
     component: CNavTitle,

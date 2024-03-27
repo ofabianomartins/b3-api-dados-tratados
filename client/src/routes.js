@@ -52,6 +52,10 @@ const CalendarList = React.lazy(() => import('./views/calendars/list'))
 const CalendarCreate = React.lazy(() => import('./views/calendars/create'))
 const SectorList = React.lazy(() => import('./views/sectors/list'))
 const SectorCreate = React.lazy(() => import('./views/sectors/create'))
+const CurrencyList = React.lazy(() => import('./views/currencies/list'))
+const CurrencyShow = React.lazy(() => import('./views/currencies/show'))
+const CurrencyCreate = React.lazy(() => import('./views/currencies/create'))
+const CurrencyUpdate = React.lazy(() => import('./views/currencies/update'))
 
 const routes = [
   { path: '/', exact: true, name: 'Home' },
@@ -61,6 +65,10 @@ const routes = [
   { path: '/calendars/create', name: 'Create Calendar', element: CalendarCreate },
   { path: '/sectors', name: 'Sectors', element: SectorList },
   { path: '/sectors/create', name: 'Create Sector', element: SectorCreate },
+  { path: '/currencies', name: 'List Currencies', element: CurrencyList },
+  { path: '/currencies/:id', name: 'Currency :id', element: CurrencyShow },
+  { path: '/currencies/create', name: 'Create Currency', element: CurrencyCreate },
+  { path: '/currencies/:id/edit', name: 'Edit Currency', element: CurrencyUpdate },
 
 
 
