@@ -45,8 +45,6 @@ fn test_get_sectors() {
 
 #[test]
 fn test_show_sector() {
-    // Setup: Insert sample data into the test database
-    
     let connection = &mut db_connection();
 
     clean_database(connection);
@@ -58,13 +56,10 @@ fn test_show_sector() {
         .get_result(connection)
         .expect("Failed to insert sample data into the database");
 
-    let new_sector = NewSector { name: "Calendar 2 updated" };
-
     // Action: Make a request to the route
     let client = Client::tracked(rocket()).expect("valid rocket instance");
     let response = client.get(format!("/api/sectors/{}", result_sector.id ))
         .header(ContentType::JSON)
-        .body(json::to_string(&new_sector).unwrap())
         .dispatch();
 
     // Assert: Check if the response contains the expected data

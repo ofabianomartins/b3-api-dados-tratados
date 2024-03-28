@@ -47,8 +47,6 @@ fn test_get_calendars() {
 
 #[test]
 fn test_show_calendars() {
-    // Setup: Insert sample data into the test database
-    
     let connection = &mut db_connection();
 
     clean_database(connection);
@@ -60,13 +58,10 @@ fn test_show_calendars() {
         .get_result(connection)
         .expect("Failed to insert sample data into the database");
 
-    let new_calendar = NewCalendar { name: "Calendar 2 updated", code: "test_calendar2" };
-
     // Action: Make a request to the route
     let client = Client::tracked(rocket()).expect("valid rocket instance");
     let response = client.get(format!("/api/calendars/{}", result_calendar.id ))
         .header(ContentType::JSON)
-        .body(json::to_string(&new_calendar).unwrap())
         .dispatch();
 
     // Assert: Check if the response contains the expected data

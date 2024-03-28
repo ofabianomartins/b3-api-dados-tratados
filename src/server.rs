@@ -40,6 +40,7 @@ fn rocket() -> Rocket<Build> {
                 controllers::calendars::update_action,
                 controllers::calendars::destroy,
                 controllers::holidays::index,
+                controllers::holidays::show,
                 controllers::holidays::create,
                 controllers::holidays::destroy,
                 controllers::currencies::index,
