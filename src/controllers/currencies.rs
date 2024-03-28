@@ -26,6 +26,22 @@ pub fn index() -> Json<Vec<Currency>> {
 }
 
 #[derive(Responder)]
+#[response(status = 200, content_type = "json")]
+pub struct ShowJson(Json<Currency>);
+
+#[get("/currencies/<currency_id>")]
+pub fn show(currency_id: i32) -> ShowJson {
+    let conn = &mut db_connection();
+    let result = currencies
+        .find(currency_id)
+        .select(Currency::as_select())
+        .first(conn)
+        .expect("Error loading currencies");
+    return ShowJson(Json(result));
+}
+
+
+#[derive(Responder)]
 #[response(status = 201, content_type = "json")]
 pub struct CreatedJson(Json<Currency>);
 
@@ -39,21 +55,6 @@ pub async fn create(new_currency: Json<NewCurrency<'_>>) -> CreatedJson {
         .expect("Failed to insert sample data into the database");
 
     return CreatedJson(Json(result));
-}
-
-#[derive(Responder)]
-#[response(status = 200, content_type = "json")]
-pub struct ShowJson(Json<Currency>);
-
-#[get("/currencies/<currency_id>")]
-pub fn show(currency_id: i32) -> ShowJson {
-    let conn = &mut db_connection();
-    let result = currencies
-        .find(currency_id)
-        .select(Currency::as_select())
-        .first(conn)
-        .expect("Error loading currencies");
-    return ShowJson(Json(result));
 }
 
 #[derive(Responder)]
