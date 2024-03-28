@@ -7,3 +7,4 @@ pub mod main_spec;
 pub mod sectors_spec;
 pub mod subsectors_spec;
 pub mod segments_spec;
+pub mod tickers_spec;

@@ -14,20 +14,20 @@ use crate::connections::db_connection;
 
 use crate::test::clean_database;
 
-#[test]
-fn test_get_calendars() {
-    // Setup: Insert sample data into the test database
-    
-    let connection = &mut db_connection();
-
-    clean_database(connection);
-
+fn setup_data(conn: &mut PgConnection) -> Calendar {
     let calendar = NewCalendar { name: "Calendar 2", code: "test_calendar2" };
-    insert_into(calendars)
+    return insert_into(calendars)
         .values(&calendar)
         .returning(Calendar::as_returning())
-        .get_result(connection)
+        .get_result(conn)
         .expect("Failed to insert sample data into the database");
+}
+
+#[test]
+fn test_get_calendars() {
+    let connection = &mut db_connection();
+    clean_database(connection);
+    setup_data(connection);
 
     // Action: Make a request to the route
     let client = Client::tracked(rocket()).expect("valid rocket instance");
@@ -48,15 +48,8 @@ fn test_get_calendars() {
 #[test]
 fn test_show_calendars() {
     let connection = &mut db_connection();
-
     clean_database(connection);
-
-    let calendar = NewCalendar { name: "Calendar 2", code: "test_calendar" };
-    let result_calendar = insert_into(calendars)
-        .values(&calendar)
-        .returning(Calendar::as_returning())
-        .get_result(connection)
-        .expect("Failed to insert sample data into the database");
+    let result_calendar = setup_data(connection);
 
     // Action: Make a request to the route
     let client = Client::tracked(rocket()).expect("valid rocket instance");
@@ -73,8 +66,6 @@ fn test_show_calendars() {
 
 #[test]
 fn test_post_calendars() {
-    // Setup: Insert sample data into the test database
-    
     let connection = &mut db_connection();
 
     clean_database(connection);
@@ -102,18 +93,9 @@ fn test_post_calendars() {
 
 #[test]
 fn test_update_calendar() {
-    // Setup: Insert sample data into the test database
-    
     let connection = &mut db_connection();
-
     clean_database(connection);
-
-    let calendar = NewCalendar { name: "Calendar 2", code: "test_calendar" };
-    let result_calendar = insert_into(calendars)
-        .values(&calendar)
-        .returning(Calendar::as_returning())
-        .get_result(connection)
-        .expect("Failed to insert sample data into the database");
+    let result_calendar = setup_data(connection);
 
     let new_calendar = NewCalendar { name: "Calendar 2 updated", code: "test_calendar2" };
 
@@ -141,18 +123,9 @@ fn test_update_calendar() {
 
 #[test]
 fn test_delete_calendar() {
-    // Setup: Insert sample data into the test database
-    
     let conn = &mut db_connection();
-
     clean_database(conn);
-
-    let calendar = NewCalendar { name: "Calendar 2", code: "test_calendar2" };
-    let result_calendar = insert_into(calendars)
-        .values(&calendar)
-        .returning(Calendar::as_returning())
-        .get_result(conn)
-        .expect("Failed to insert sample data into the database");
+    let result_calendar = setup_data(conn);
 
     // Action: Make a request to the route
     let client = Client::tracked(rocket()).expect("valid rocket instance");

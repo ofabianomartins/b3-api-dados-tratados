@@ -23,15 +23,6 @@ pub fn index() -> Json<Vec<TheoryPortfolio>> {
     return Json(results);
 }
 
-#[delete("/theory_portfolios/<theory_portfolio_id>")]
-pub fn destroy(theory_portfolio_id: i32) -> NoContent {
-    let conn = &mut db_connection();
-    delete(theory_portfolios.find(theory_portfolio_id))
-        .execute(conn)
-        .expect("Error loading theory_portfolios");
-    return NoContent;
-}
-
 #[derive(Responder)]
 #[response(status = 201, content_type = "json")]
 pub struct CreatedJson(Json<TheoryPortfolio>);
@@ -48,3 +39,11 @@ pub async fn create(new_theory_portfolio: Json<NewTheoryPortfolio>) -> CreatedJs
     return CreatedJson(Json(result));
 }
 
+#[delete("/theory_portfolios/<theory_portfolio_id>")]
+pub fn destroy(theory_portfolio_id: i32) -> NoContent {
+    let conn = &mut db_connection();
+    delete(theory_portfolios.find(theory_portfolio_id))
+        .execute(conn)
+        .expect("Error loading theory_portfolios");
+    return NoContent;
+}

@@ -14,18 +14,21 @@ use crate::connections::db_connection;
 
 use crate::test::clean_database;
 
+fn setup_data(conn: &mut PgConnection) -> Currency {
+    let currency = NewCurrency { name: "Calendar 2", code: "test_calendar2" };
+    return insert_into(currencies)
+        .values(&currency)
+        .returning(Currency::as_returning())
+        .get_result(conn)
+        .expect("Failed to insert sample data into the database");
+}
+
 #[test]
 fn test_get_currencies() {
     let connection = &mut db_connection();
 
     clean_database(connection);
-
-    let currency = NewCurrency { name: "Calendar 2", code: "test_calendar2" };
-    insert_into(currencies)
-        .values(&currency)
-        .returning(Currency::as_returning())
-        .get_result(connection)
-        .expect("Failed to insert sample data into the database");
+    setup_data(connection);
 
     // Action: Make a request to the route
     let client = Client::tracked(rocket()).expect("valid rocket instance");
@@ -50,13 +53,7 @@ fn test_show_currency() {
     let connection = &mut db_connection();
 
     clean_database(connection);
-
-    let currency = NewCurrency { name: "Calendar 2", code: "test_calendar" };
-    let result_currency = insert_into(currencies)
-        .values(&currency)
-        .returning(Currency::as_returning())
-        .get_result(connection)
-        .expect("Failed to insert sample data into the database");
+    let result_currency = setup_data(connection);
 
     // Action: Make a request to the route
     let client = Client::tracked(rocket()).expect("valid rocket instance");
@@ -105,13 +102,7 @@ fn test_update_currency() {
 
     clean_database(connection);
 
-    let currency = NewCurrency { name: "Calendar 2", code: "test_calendar" };
-    let result_currency = insert_into(currencies)
-        .values(&currency)
-        .returning(Currency::as_returning())
-        .get_result(connection)
-        .expect("Failed to insert sample data into the database");
-
+    let result_currency = setup_data(connection);
     let new_currency = NewCurrency { name: "Calendar 2 updated", code: "test_calendar2" };
 
     // Action: Make a request to the route
@@ -141,15 +132,8 @@ fn test_delete_currency() {
     // Setup: Insert sample data into the test database
     
     let connection = &mut db_connection();
-
     clean_database(connection);
-
-    let currency = NewCurrency { name: "Calendar 2", code: "test_calendar2" };
-    let result_currency = insert_into(currencies)
-        .values(&currency)
-        .returning(Currency::as_returning())
-        .get_result(connection)
-        .expect("Failed to insert sample data into the database");
+    let result_currency = setup_data(connection);
 
     // Action: Make a request to the route
     let client = Client::tracked(rocket()).expect("valid rocket instance");
