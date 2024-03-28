@@ -50,30 +50,21 @@ fn test_get_indicators() {
 }
 
 #[test]
-fn test_delete_indicator() {
-    // Setup: Insert sample data into the test database
-    
+fn test_show_indicators() {
     let connection = &mut db_connection();
 
     clean_database(connection);
 
     let result_indicator = setup_data(connection);
 
-    // Action: Make a request to the route
     let client = Client::tracked(rocket()).expect("valid rocket instance");
-    let response = client.delete(format!("/api/indicators/{}", result_indicator.id ))
+    let response = client.get(format!("/api/indicators/{}", result_indicator.id ))
         .header(ContentType::JSON)
         .dispatch();
 
-    let result = indicators
-        .find(result_indicator.id)
-        .select(Indicator::as_select())
-            .load(connection)
-        .expect("Error loading indicators");
-
     // Assert: Check if the response contains the expected data
-    assert_eq!(response.status(), Status::NoContent);
-    assert_eq!(result.len(), 0); // Expecting three calendars in the response
+    assert_eq!(response.status(), Status::Ok);
+    // assert_eq!(response.len(), 2); // Expecting three calendars in the response
 
     clean_database(connection);
 }
@@ -103,4 +94,34 @@ fn test_post_indicators() {
 
     clean_database(connection);
 }
+
+#[test]
+fn test_delete_indicator() {
+    // Setup: Insert sample data into the test database
+    
+    let connection = &mut db_connection();
+
+    clean_database(connection);
+
+    let result_indicator = setup_data(connection);
+
+    // Action: Make a request to the route
+    let client = Client::tracked(rocket()).expect("valid rocket instance");
+    let response = client.delete(format!("/api/indicators/{}", result_indicator.id ))
+        .header(ContentType::JSON)
+        .dispatch();
+
+    let result = indicators
+        .find(result_indicator.id)
+        .select(Indicator::as_select())
+            .load(connection)
+        .expect("Error loading indicators");
+
+    // Assert: Check if the response contains the expected data
+    assert_eq!(response.status(), Status::NoContent);
+    assert_eq!(result.len(), 0); // Expecting three calendars in the response
+
+    clean_database(connection);
+}
+
 

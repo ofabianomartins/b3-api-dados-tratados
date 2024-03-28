@@ -23,14 +23,21 @@ pub fn index() -> Json<Vec<Subsector>> {
     return Json(results);
 }
 
-#[delete("/subsectors/<subsector_id>")]
-pub fn destroy(subsector_id: i32) -> NoContent {
+#[derive(Responder)]
+#[response(status = 200, content_type = "json")]
+pub struct ShowJson(Json<Subsector>);
+
+#[get("/subsectors/<subsector_id>")]
+pub fn show(subsector_id: i32) -> ShowJson {
     let conn = &mut db_connection();
-    delete(subsectors.find(subsector_id))
-        .execute(conn)
-        .expect("Error loading subsectors");
-    return NoContent;
+    let result = subsectors
+        .find(subsector_id)
+        .select(Subsector::as_select())
+        .first(conn)
+        .expect("Error loading segments");
+    return ShowJson(Json(result));
 }
+
 
 #[derive(Responder)]
 #[response(status = 201, content_type = "json")]
@@ -46,5 +53,14 @@ pub async fn create(new_subsector: Json<NewSubsector<'_>>) -> CreatedJson {
         .expect("Failed to insert sample data into the database");
 
     return CreatedJson(Json(result));
+}
+
+#[delete("/subsectors/<subsector_id>")]
+pub fn destroy(subsector_id: i32) -> NoContent {
+    let conn = &mut db_connection();
+    delete(subsectors.find(subsector_id))
+        .execute(conn)
+        .expect("Error loading subsectors");
+    return NoContent;
 }
 

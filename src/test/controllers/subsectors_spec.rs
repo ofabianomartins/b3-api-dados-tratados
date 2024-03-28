@@ -55,30 +55,18 @@ fn test_get_subsectors() {
 }
 
 #[test]
-fn test_delete_subsector() {
-    // Setup: Insert sample data into the test database
-    
+fn test_show_subsectors() {
     let connection = &mut db_connection();
 
     clean_database(connection);
-
     let result_subsector = setup_data(connection);
 
-    // Action: Make a request to the route
     let client = Client::tracked(rocket()).expect("valid rocket instance");
-    let response = client.delete(format!("/api/subsectors/{}", result_subsector.id ))
+    let response = client.get(format!("/api/subsectors/{}", result_subsector.id))
         .header(ContentType::JSON)
         .dispatch();
 
-    let result = subsectors
-        .find(result_subsector.id)
-        .select(Subsector::as_select())
-        .load(connection)
-        .expect("Error loading subsectors");
-
-    // Assert: Check if the response contains the expected data
-    assert_eq!(response.status(), Status::NoContent);
-    assert_eq!(result.len(), 0); // Expecting three calendars in the response
+    assert_eq!(response.status(), Status::Ok);
 
     clean_database(connection);
 }
@@ -110,6 +98,35 @@ fn test_post_subsectors() {
 
     // Assert: Check if the response contains the expected data
     assert_eq!(response.status(), Status::Created);
+
+    clean_database(connection);
+}
+
+#[test]
+fn test_delete_subsector() {
+    // Setup: Insert sample data into the test database
+    
+    let connection = &mut db_connection();
+
+    clean_database(connection);
+
+    let result_subsector = setup_data(connection);
+
+    // Action: Make a request to the route
+    let client = Client::tracked(rocket()).expect("valid rocket instance");
+    let response = client.delete(format!("/api/subsectors/{}", result_subsector.id ))
+        .header(ContentType::JSON)
+        .dispatch();
+
+    let result = subsectors
+        .find(result_subsector.id)
+        .select(Subsector::as_select())
+        .load(connection)
+        .expect("Error loading subsectors");
+
+    // Assert: Check if the response contains the expected data
+    assert_eq!(response.status(), Status::NoContent);
+    assert_eq!(result.len(), 0); // Expecting three calendars in the response
 
     clean_database(connection);
 }

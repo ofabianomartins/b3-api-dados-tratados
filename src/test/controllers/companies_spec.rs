@@ -45,30 +45,21 @@ fn test_get_companies() {
 }
 
 #[test]
-fn test_delete_company() {
-    // Setup: Insert sample data into the test database
-    
+fn test_show_companies() {
     let connection = &mut db_connection();
 
     clean_database(connection);
 
     let result_company = setup_data(connection);
 
-    // Action: Make a request to the route
     let client = Client::tracked(rocket()).expect("valid rocket instance");
-    let response = client.delete(format!("/api/companies/{}", result_company.id ))
+    let response = client.get(format!("/api/companies/{}", result_company.id ))
         .header(ContentType::JSON)
         .dispatch();
 
-    let result = companies
-        .find(result_company.id)
-        .select(Company::as_select())
-        .load(connection)
-        .expect("Error loading companies");
-
     // Assert: Check if the response contains the expected data
-    assert_eq!(response.status(), Status::NoContent);
-    assert_eq!(result.len(), 0); // Expecting three calendars in the response
+    assert_eq!(response.status(), Status::Ok);
+    // assert_eq!(response.len(), 2); // Expecting three calendars in the response
 
     clean_database(connection);
 }
@@ -97,4 +88,69 @@ fn test_post_companies() {
 
     clean_database(connection);
 }
+
+#[test]
+fn test_update_currency() {
+    let connection = &mut db_connection();
+
+    clean_database(connection);
+    let result_company = setup_data(connection);
+
+    let new_company = NewCompany {
+        name: "Company 2",
+        company_type: "DEFAULT",
+        cnpj: "00.001.000/0001-00"
+    };
+
+    // Action: Make a request to the route
+    let client = Client::tracked(rocket()).expect("valid rocket instance");
+    let response = client.put(format!("/api/companies/{}", result_company.id ))
+        .header(ContentType::JSON)
+        .body(json::to_string(&new_company).unwrap())
+        .dispatch();
+
+    let result = companies
+        .find(result_company.id)
+        .select(Company::as_select())
+        .load(connection)
+        .expect("Error loading companies");
+
+    // Assert: Check if the response contains the expected data
+    assert_eq!(response.status(), Status::Ok);
+    assert_eq!(result.len(), 1); // Expecting three calendars in the response
+    assert_eq!(result[0].name, "Company 2"); // Expecting three calendars in the response
+    // assert_eq!(result[0].cnpj, "00.001.000/0001-00"); // Expecting three calendars in the response
+
+    clean_database(connection);
+}
+
+#[test]
+fn test_delete_company() {
+    // Setup: Insert sample data into the test database
+    
+    let connection = &mut db_connection();
+
+    clean_database(connection);
+
+    let result_company = setup_data(connection);
+
+    // Action: Make a request to the route
+    let client = Client::tracked(rocket()).expect("valid rocket instance");
+    let response = client.delete(format!("/api/companies/{}", result_company.id ))
+        .header(ContentType::JSON)
+        .dispatch();
+
+    let result = companies
+        .find(result_company.id)
+        .select(Company::as_select())
+        .load(connection)
+        .expect("Error loading companies");
+
+    // Assert: Check if the response contains the expected data
+    assert_eq!(response.status(), Status::NoContent);
+    assert_eq!(result.len(), 0); // Expecting three calendars in the response
+
+    clean_database(connection);
+}
+
 

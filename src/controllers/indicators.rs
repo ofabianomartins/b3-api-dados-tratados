@@ -23,13 +23,19 @@ pub fn index() -> Json<Vec<Indicator>> {
     return Json(results);
 }
 
-#[delete("/indicators/<indicator_id>")]
-pub fn destroy(indicator_id: i32) -> NoContent {
+#[derive(Responder)]
+#[response(status = 200, content_type = "json")]
+pub struct ShowJson(Json<Indicator>);
+
+#[get("/indicators/<indicator_id>")]
+pub fn show(indicator_id: i32) -> ShowJson {
     let conn = &mut db_connection();
-    delete(indicators.find(indicator_id))
-        .execute(conn)
+    let result = indicators
+        .find(indicator_id)
+        .select(Indicator::as_select())
+        .first(conn)
         .expect("Error loading indicators");
-    return NoContent;
+    return ShowJson(Json(result));
 }
 
 #[derive(Responder)]
@@ -46,5 +52,14 @@ pub async fn create(new_indicator: Json<NewIndicator<'_>>) -> CreatedJson {
         .expect("Failed to insert sample data into the database");
 
     return CreatedJson(Json(result));
+}
+
+#[delete("/indicators/<indicator_id>")]
+pub fn destroy(indicator_id: i32) -> NoContent {
+    let conn = &mut db_connection();
+    delete(indicators.find(indicator_id))
+        .execute(conn)
+        .expect("Error loading indicators");
+    return NoContent;
 }
 

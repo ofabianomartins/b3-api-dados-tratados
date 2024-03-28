@@ -44,57 +44,46 @@ fn setup_data(conn: &mut PgConnection) -> Segment {
 }
 
 #[test]
-fn test_get_subsectors() {
+fn test_get_segments() {
     let connection = &mut db_connection();
 
     clean_database(connection);
     setup_data(connection);
 
     let client = Client::tracked(rocket()).expect("valid rocket instance");
-    let response = client.get("/api/subsectors")
+    let response = client.get("/api/segments")
         .header(ContentType::JSON)
         .dispatch();
 
     assert_eq!(response.status(), Status::Ok);
 
     let test = response.into_string().unwrap();
-    let subsectors_list: Vec<Subsector> = json::from_str(&test).expect("Failed to read JSON");
-    assert_eq!(subsectors_list.len(), 1); // Expecting three calendars in the response
+    let segments_list: Vec<Segment> = json::from_str(&test).expect("Failed to read JSON");
+    assert_eq!(segments_list.len(), 1); // Expecting three calendars in the response
     
     clean_database(connection);
 }
 
 #[test]
-fn test_delete_subsector() {
-    // Setup: Insert sample data into the test database
-    
+fn test_show_segments() {
     let connection = &mut db_connection();
 
     clean_database(connection);
-
     let result_segment = setup_data(connection);
 
-    // Action: Make a request to the route
     let client = Client::tracked(rocket()).expect("valid rocket instance");
-    let response = client.delete(format!("/api/segments/{}", result_segment.id ))
+    let response = client.get(format!("/api/segments/{}", result_segment.id))
         .header(ContentType::JSON)
         .dispatch();
 
-    let result = segments
-        .find(result_segment.id)
-        .select(Segment::as_select())
-        .load(connection)
-        .expect("Error loading segments");
-
-    // Assert: Check if the response contains the expected data
-    assert_eq!(response.status(), Status::NoContent);
-    assert_eq!(result.len(), 0); // Expecting three calendars in the response
+    assert_eq!(response.status(), Status::Ok);
 
     clean_database(connection);
 }
 
+
 #[test]
-fn test_post_subsectors() {
+fn test_post_segments() {
     let connection = &mut db_connection();
 
     clean_database(connection);
@@ -127,6 +116,33 @@ fn test_post_subsectors() {
 
     // Assert: Check if the response contains the expected data
     assert_eq!(response.status(), Status::Created);
+
+    clean_database(connection);
+}
+
+#[test]
+fn test_delete_segments() {
+    let connection = &mut db_connection();
+
+    clean_database(connection);
+
+    let result_segment = setup_data(connection);
+
+    // Action: Make a request to the route
+    let client = Client::tracked(rocket()).expect("valid rocket instance");
+    let response = client.delete(format!("/api/segments/{}", result_segment.id ))
+        .header(ContentType::JSON)
+        .dispatch();
+
+    let result = segments
+        .find(result_segment.id)
+        .select(Segment::as_select())
+        .load(connection)
+        .expect("Error loading segments");
+
+    // Assert: Check if the response contains the expected data
+    assert_eq!(response.status(), Status::NoContent);
+    assert_eq!(result.len(), 0); // Expecting three calendars in the response
 
     clean_database(connection);
 }
