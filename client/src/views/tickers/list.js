@@ -1,3 +1,4 @@
+
 import React, {useEffect, useState} from 'react'
 import { NavLink } from 'react-router-dom'
 import {
@@ -19,21 +20,21 @@ import {
 
 import { useDispatch, useSelector } from 'react-redux'
 
-import CurrencySlice from '../../slices/CurrencySlice'
+import TickerSlice from '../../slices/TickerSlice'
 
 const Tables = () => {
   const [messageDanger, setMessageDanger] = useState(null)
-  const list = useSelector(state => state.currencies.list);
+  const list = useSelector(state => state.tickers.list);
   const dispatch = useDispatch()
 
   useEffect(() => {
-    dispatch(CurrencySlice.actions.index());
+    dispatch(TickerSlice.actions.index());
   },[])
 
   const handleDelete = (id) => {
-    dispatch(CurrencySlice.actions.destroy(id))
-      .then(() => dispatch(CurrencySlice.actions.index()))
-      .then(() => setMessageDanger(`Currency ${id} Deletado!`));
+    dispatch(TickerSlice.actions.destroy(id))
+      .then(() => dispatch(TickerSlice.actions.index()))
+      .then(() => setMessageDanger(`Ticker ${id} Deletado!`));
   }
 
   return (
@@ -41,7 +42,7 @@ const Tables = () => {
       <CCol xs={12}>
         <CCard className="mb-4">
           <CCardBody>
-            <CNavLink to='/currencies/create' as={NavLink}>
+            <CNavLink to='/tickers/create' as={NavLink}>
               <CButton color="info" variant="outline">Create</CButton>
             </CNavLink>
           </CCardBody>
@@ -53,8 +54,8 @@ const Tables = () => {
                 <CTableHead>
                   <CTableRow>
                     <CTableHeaderCell scope="col">#</CTableHeaderCell>
-                    <CTableHeaderCell scope="col">name</CTableHeaderCell>
-                    <CTableHeaderCell scope="col">Code</CTableHeaderCell>
+                    <CTableHeaderCell scope="col">Symbol</CTableHeaderCell>
+                    <CTableHeaderCell scope="col">Security Type</CTableHeaderCell>
                     <CTableHeaderCell scope="col">Actions</CTableHeaderCell>
                   </CTableRow>
                 </CTableHead>
@@ -63,16 +64,12 @@ const Tables = () => {
                     return (
                       <CTableRow key={idx} >
                         <CTableDataCell>{elem.id}</CTableDataCell>
-                        <CTableDataCell>{elem.name}</CTableDataCell>
-                        <CTableDataCell>{elem.code}</CTableDataCell>
+                        <CTableDataCell>{elem.symbol}</CTableDataCell>
+                        <CTableDataCell>{elem.security_type}</CTableDataCell>
                         <CTableDataCell>
                           <CButtonGroup role="group" aria-label="Row Actions">
-                              <CNavLink to={`/currencies/${elem.id}`} as={NavLink}>
-                                <CButton color="info" variant="outline">Show</CButton>
-                              </CNavLink>
-                              <CNavLink to={`/currencies/${elem.id}/edit`} as={NavLink}>
-                                <CButton color="primary" variant="outline">Edit</CButton>
-                              </CNavLink>
+                              <CButton color="info" variant="outline">Show</CButton>
+                              <CButton color="primary" variant="outline">Edit</CButton>
                               <CButton
                                 color="danger"
                                 variant="outline"

@@ -21,32 +21,68 @@ const _nav = [
     name: 'Dashboard',
     to: '/dashboard',
     icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
-    badge: {
-      color: 'info',
-      text: 'NEW',
-    },
   },
   {
     component: CNavTitle,
     name: 'Data',
   },
   {
-    component: CNavItem,
-    name: 'Calendars',
-    to: '/calendars',
-    icon: <CIcon icon={cilCalendar} customClassName="nav-icon" />,
+    component: CNavGroup,
+    name: 'Base',
+    to: '#',
+    icon: <CIcon icon={cilPuzzle} customClassName="nav-icon" />,
+    items: [
+      {
+        component: CNavItem,
+        name: 'Calendars',
+        to: '/calendars',
+        icon: <CIcon icon={cilCalendar} customClassName="nav-icon" />,
+      },
+      {
+        component: CNavItem,
+        name: 'Currencies',
+        to: '/currencies',
+        icon: <CIcon icon={cilMoney} customClassName="nav-icon" />,
+      },
+      {
+        component: CNavItem,
+        name: 'Indicators',
+        to: '/indicators',
+        icon: <CIcon icon={cilMoney} customClassName="nav-icon" />,
+      }
+    ]
   },
   {
-    component: CNavItem,
-    name: 'Sectors',
-    to: '/sectors',
-    icon: <CIcon icon={cilViewModule} customClassName="nav-icon" />,
-  },
-  {
-    component: CNavItem,
-    name: 'Currencies',
-    to: '/currencies',
-    icon: <CIcon icon={cilMoney} customClassName="nav-icon" />,
+    component: CNavGroup,
+    name: 'B3 Data',
+    to: '#',
+    icon: <CIcon icon={cilPuzzle} customClassName="nav-icon" />,
+    items: [
+      {
+        component: CNavItem,
+        name: 'Tickers',
+        to: '/tickers',
+        icon: <CIcon icon={cilMoney} customClassName="nav-icon" />,
+      },
+      {
+        component: CNavItem,
+        name: 'Companies',
+        to: '/companies',
+        icon: <CIcon icon={cilMoney} customClassName="nav-icon" />,
+      },
+      {
+        component: CNavItem,
+        name: 'Sectors',
+        to: '/sectors',
+        icon: <CIcon icon={cilViewModule} customClassName="nav-icon" />,
+      },
+      {
+        component: CNavItem,
+        name: 'Subsectors',
+        to: '/subsectors',
+        icon: <CIcon icon={cilViewModule} customClassName="nav-icon" />,
+      }
+    ]
   },
   {
     component: CNavTitle,
@@ -262,16 +298,6 @@ const _nav = [
       color: 'info',
       text: 'NEW',
     },
-  },
-  {
-    component: CNavTitle,
-    name: 'Extras',
-  },
-  {
-    component: CNavItem,
-    name: 'Docs',
-    href: 'https://coreui.io/react/docs/templates/installation/',
-    icon: <CIcon icon={cilDescription} customClassName="nav-icon" />,
   },
 ]
 

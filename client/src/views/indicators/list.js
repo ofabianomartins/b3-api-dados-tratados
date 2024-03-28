@@ -19,21 +19,21 @@ import {
 
 import { useDispatch, useSelector } from 'react-redux'
 
-import CurrencySlice from '../../slices/CurrencySlice'
+import IndicatorSlice from '../../slices/IndicatorSlice'
 
 const Tables = () => {
   const [messageDanger, setMessageDanger] = useState(null)
-  const list = useSelector(state => state.currencies.list);
+  const list = useSelector(state => state.indicators.list);
   const dispatch = useDispatch()
 
   useEffect(() => {
-    dispatch(CurrencySlice.actions.index());
+    dispatch(IndicatorSlice.actions.index());
   },[])
 
   const handleDelete = (id) => {
-    dispatch(CurrencySlice.actions.destroy(id))
-      .then(() => dispatch(CurrencySlice.actions.index()))
-      .then(() => setMessageDanger(`Currency ${id} Deletado!`));
+    dispatch(IndicatorSlice.actions.destroy(id))
+      .then(() => dispatch(IndicatorSlice.actions.index()))
+      .then(() => setMessageDanger(`Indicator ${id} Deletado!`));
   }
 
   return (
@@ -41,7 +41,7 @@ const Tables = () => {
       <CCol xs={12}>
         <CCard className="mb-4">
           <CCardBody>
-            <CNavLink to='/currencies/create' as={NavLink}>
+            <CNavLink to='/indicators/create' as={NavLink}>
               <CButton color="info" variant="outline">Create</CButton>
             </CNavLink>
           </CCardBody>
@@ -54,7 +54,9 @@ const Tables = () => {
                   <CTableRow>
                     <CTableHeaderCell scope="col">#</CTableHeaderCell>
                     <CTableHeaderCell scope="col">name</CTableHeaderCell>
-                    <CTableHeaderCell scope="col">Code</CTableHeaderCell>
+                    <CTableHeaderCell scope="col">Symbol</CTableHeaderCell>
+                    <CTableHeaderCell scope="col">Description</CTableHeaderCell>
+                    <CTableHeaderCell scope="col">IndicatorType</CTableHeaderCell>
                     <CTableHeaderCell scope="col">Actions</CTableHeaderCell>
                   </CTableRow>
                 </CTableHead>
@@ -64,13 +66,15 @@ const Tables = () => {
                       <CTableRow key={idx} >
                         <CTableDataCell>{elem.id}</CTableDataCell>
                         <CTableDataCell>{elem.name}</CTableDataCell>
-                        <CTableDataCell>{elem.code}</CTableDataCell>
+                        <CTableDataCell>{elem.symbol}</CTableDataCell>
+                        <CTableDataCell>{elem.description}</CTableDataCell>
+                        <CTableDataCell>{elem.indicator_type}</CTableDataCell>
                         <CTableDataCell>
                           <CButtonGroup role="group" aria-label="Row Actions">
-                              <CNavLink to={`/currencies/${elem.id}`} as={NavLink}>
+                              <CNavLink to={`/indicators/${elem.id}`} as={NavLink}>
                                 <CButton color="info" variant="outline">Show</CButton>
                               </CNavLink>
-                              <CNavLink to={`/currencies/${elem.id}/edit`} as={NavLink}>
+                              <CNavLink to={`/indicators/${elem.id}/edit`} as={NavLink}>
                                 <CButton color="primary" variant="outline">Edit</CButton>
                               </CNavLink>
                               <CButton

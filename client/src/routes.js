@@ -57,6 +57,26 @@ const CurrencyShow = React.lazy(() => import('./views/currencies/show'))
 const CurrencyCreate = React.lazy(() => import('./views/currencies/create'))
 const CurrencyUpdate = React.lazy(() => import('./views/currencies/update'))
 
+const SubsectorList = React.lazy(() => import('./views/subsectors/list'))
+const SubsectorShow = React.lazy(() => import('./views/subsectors/show'))
+const SubsectorCreate = React.lazy(() => import('./views/subsectors/create'))
+const SubsectorUpdate = React.lazy(() => import('./views/subsectors/update'))
+
+const CompanyList = React.lazy(() => import('./views/companies/list'))
+const CompanyShow = React.lazy(() => import('./views/companies/show'))
+const CompanyCreate = React.lazy(() => import('./views/companies/create'))
+const CompanyUpdate = React.lazy(() => import('./views/companies/update'))
+
+const TickerList = React.lazy(() => import('./views/tickers/list'))
+const TickerShow = React.lazy(() => import('./views/tickers/show'))
+const TickerCreate = React.lazy(() => import('./views/tickers/create'))
+const TickerUpdate = React.lazy(() => import('./views/tickers/update'))
+
+const IndicatorList = React.lazy(() => import('./views/indicators/list'))
+const IndicatorShow = React.lazy(() => import('./views/indicators/show'))
+const IndicatorCreate = React.lazy(() => import('./views/indicators/create'))
+const IndicatorUpdate = React.lazy(() => import('./views/indicators/update'))
+
 const routes = [
   { path: '/', exact: true, name: 'Home' },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
@@ -70,7 +90,25 @@ const routes = [
   { path: '/currencies/create', name: 'Create Currency', element: CurrencyCreate },
   { path: '/currencies/:id/edit', name: 'Edit Currency', element: CurrencyUpdate },
 
+  { path: '/subsectors', name: 'List Subsectors', element: SubsectorList },
+  { path: '/subsectors/:id', name: 'Subsector :id', element: SubsectorShow },
+  { path: '/subsectors/create', name: 'Create Subsector', element: SubsectorCreate },
+  { path: '/subsectors/:id/edit', name: 'Edit Subsector', element: SubsectorUpdate },
 
+  { path: '/companies', name: 'List Companies', element: CompanyList },
+  { path: '/companies/:id', name: 'Company :id', element: CompanyShow },
+  { path: '/companies/create', name: 'Create Company', element: CompanyCreate },
+  { path: '/companies/:id/edit', name: 'Edit Company', element: CompanyUpdate },
+
+  { path: '/tickers', name: 'List Tickers', element: TickerList },
+  { path: '/tickers/:id', name: 'Ticker :id', element: TickerShow },
+  { path: '/tickers/create', name: 'Create Ticker', element: TickerCreate },
+  { path: '/tickers/:id/edit', name: 'Edit Ticker', element: TickerUpdate },
+
+  { path: '/indicators', name: 'List Indicators', element: IndicatorList },
+  { path: '/indicators/:id', name: 'Indicator :id', element: IndicatorShow },
+  { path: '/indicators/create', name: 'Create Indicator', element: IndicatorCreate },
+  { path: '/indicators/:id/edit', name: 'Edit Indicator', element: IndicatorUpdate },
 
   { path: '/theme', name: 'Theme', element: Colors, exact: true },
   { path: '/theme/colors', name: 'Colors', element: Colors },

@@ -21,7 +21,7 @@ export default (option) => {
 
   const create = (data) => {
     return async (dispatch) => {
-      return server.put(option.path, data)
+      return server.post(option.path, data)
         .then(resp => dispatch({ type: `${option.name}/setBody`, payload: resp.data }))
     }
   }
