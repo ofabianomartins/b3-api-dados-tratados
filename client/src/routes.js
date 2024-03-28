@@ -77,6 +77,11 @@ const IndicatorShow = React.lazy(() => import('./views/indicators/show'))
 const IndicatorCreate = React.lazy(() => import('./views/indicators/create'))
 const IndicatorUpdate = React.lazy(() => import('./views/indicators/update'))
 
+const QuoteList = React.lazy(() => import('./views/quotes/list'))
+
+const TheoryPortfolioList = React.lazy(() => import('./views/theory_portfolios/list'))
+const TheoryPortfolioTransactionList = React.lazy(() => import('./views/theory_portfolio_transactions/list'))
+
 const routes = [
   { path: '/', exact: true, name: 'Home' },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
@@ -109,6 +114,12 @@ const routes = [
   { path: '/indicators/:id', name: 'Indicator :id', element: IndicatorShow },
   { path: '/indicators/create', name: 'Create Indicator', element: IndicatorCreate },
   { path: '/indicators/:id/edit', name: 'Edit Indicator', element: IndicatorUpdate },
+
+  { path: '/quotes', name: 'List Quotes', element: QuoteList },
+
+  { path: '/theory_portfolios', name: 'List Theory Portfolios', element: TheoryPortfolioList },
+
+  { path: '/theory_portfolio_transactions', name: 'List Theory Portfolio Transactionss', element: TheoryPortfolioTransactionList },
 
   { path: '/theme', name: 'Theme', element: Colors, exact: true },
   { path: '/theme/colors', name: 'Colors', element: Colors },

@@ -66,6 +66,12 @@ const _nav = [
       },
       {
         component: CNavItem,
+        name: 'Quotes',
+        to: '/quotes',
+        icon: <CIcon icon={cilMoney} customClassName="nav-icon" />,
+      },
+      {
+        component: CNavItem,
         name: 'Companies',
         to: '/companies',
         icon: <CIcon icon={cilMoney} customClassName="nav-icon" />,
@@ -80,6 +86,18 @@ const _nav = [
         component: CNavItem,
         name: 'Subsectors',
         to: '/subsectors',
+        icon: <CIcon icon={cilViewModule} customClassName="nav-icon" />,
+      },
+      {
+        component: CNavItem,
+        name: 'TheoryPortfolio',
+        to: '/theory_portfolios',
+        icon: <CIcon icon={cilViewModule} customClassName="nav-icon" />,
+      },
+      {
+        component: CNavItem,
+        name: 'TheoryPortfolioTransaction',
+        to: '/theory_portfolio_transactions',
         icon: <CIcon icon={cilViewModule} customClassName="nav-icon" />,
       }
     ]
@@ -289,16 +307,16 @@ const _nav = [
       },
     ],
   },
-  {
-    component: CNavItem,
-    name: 'Widgets',
-    to: '/widgets',
-    icon: <CIcon icon={cilCalculator} customClassName="nav-icon" />,
-    badge: {
-      color: 'info',
-      text: 'NEW',
-    },
-  },
+//  {
+//    component: CNavItem,
+//    name: 'Widgets',
+//    to: '/widgets',
+//    icon: <CIcon icon={cilCalculator} customClassName="nav-icon" />,
+//    badge: {
+//      color: 'info',
+//      text: 'NEW',
+//    },
+//  },
 ]
 
 export default _nav

@@ -7,6 +7,10 @@ import SubsectorSlice from './slices/SubsectorSlice'
 import CompanySlice from './slices/CompanySlice'
 import TickerSlice from './slices/TickerSlice'
 import IndicatorSlice from './slices/IndicatorSlice'
+import QuoteSlice from './slices/QuoteSlice'
+
+import TheoryPortfolioSlice from './slices/TheoryPortfolioSlice'
+import TheoryPortfolioTransactionSlice from './slices/TheoryPortfolioTransactionSlice'
 
 const store = configureStore({
   reducer: {
@@ -16,6 +20,9 @@ const store = configureStore({
     [CompanySlice.name]: CompanySlice.reducer,
     [TickerSlice.name]: TickerSlice.reducer,
     [IndicatorSlice.name]: IndicatorSlice.reducer,
+    [TheoryPortfolioSlice.name]: TheoryPortfolioSlice.reducer,
+    [TheoryPortfolioTransactionSlice.name]: TheoryPortfolioTransactionSlice.reducer,
+    [QuoteSlice.name]: QuoteSlice.reducer,
     [CurrencySlice.name]: CurrencySlice.reducer
   }
 })
