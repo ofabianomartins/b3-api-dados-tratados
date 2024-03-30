@@ -16,10 +16,10 @@ path = "src/job.rs"
 rocket = { version = "0.5.0", features = ["json"]}
 rocket_contrib = "0.4.11"
 rocket_codegen = "0.5.0"
-diesel = { version = "2.1.0", features = ["postgres", "r2d2", "time", "chrono", "serde_json", "numeric", "uuid" ] }
+diesel = { version = "2.1.4", features = ["postgres", "r2d2", "time", "chrono", "serde_json", "numeric", "uuid" ] }
 serde = "1.0.197"
 chrono = { version = "0.4.34", features = ["serde"] }
 bigdecimal = { version = "0.4.2", features = ["serde"]} 
-uuid = { version = "1.7.0", features = ["serde"]} 
+uuid = { version = "1.7.0", features = ["serde", "v4"]} 
 redis = "0.24.0" 
 

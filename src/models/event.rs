@@ -9,7 +9,10 @@ use serde::Deserialize;
 use std::fmt::Debug;
 
 use chrono::NaiveDate;
+use chrono::NaiveDateTime;
 use bigdecimal::BigDecimal;
+
+use uuid::Uuid;
 
 use crate::schema::*;
 
@@ -24,7 +27,10 @@ pub struct Event {
     pub liquidation_date: NaiveDate,
     pub type_: String,
     pub factor: BigDecimal,
-    pub strike: Option<BigDecimal>
+    pub strike: Option<BigDecimal>,
+    pub uuid: Uuid,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
 }
 
 #[derive(Debug, Serialize, Deserialize, Insertable)]

@@ -9,6 +9,7 @@ use serde::Deserialize;
 use std::fmt::Debug;
 
 use chrono::NaiveDate;
+use chrono::NaiveDateTime;
 use bigdecimal::BigDecimal;
 
 use uuid::Uuid;
@@ -48,7 +49,9 @@ pub struct Quote {
 	pub change_begin: BigDecimal,
 	pub daily_factor: BigDecimal,
 	pub accumulated_factor: BigDecimal,
-    pub uuid: Uuid
+    pub uuid: Uuid,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
 }
 
 #[derive(Debug, Serialize, Deserialize, Insertable)]

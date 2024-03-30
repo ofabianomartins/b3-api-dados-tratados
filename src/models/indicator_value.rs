@@ -9,7 +9,10 @@ use serde::Deserialize;
 use std::fmt::Debug;
 
 use chrono::NaiveDate;
+use chrono::NaiveDateTime;
 use bigdecimal::BigDecimal;
+
+use uuid::Uuid;
 
 use crate::schema::*;
 
@@ -21,7 +24,10 @@ pub struct IndicatorValue {
     pub date: NaiveDate,
     pub indicator_id: i32,
     pub company_id: i32,
-    pub close: BigDecimal
+    pub close: BigDecimal,
+    pub uuid: Uuid,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
 }
 
 #[derive(Debug, Serialize, Deserialize, Insertable)]

@@ -10,6 +10,9 @@ use std::fmt::Debug;
 
 use bigdecimal::BigDecimal;
 use chrono::NaiveDate;
+use chrono::NaiveDateTime;
+
+use uuid::Uuid;
 
 use crate::schema::*;
 
@@ -22,6 +25,9 @@ pub struct TheoryPortfolioTransaction {
     pub quantity: BigDecimal,
     pub ticker_id: i32,
     pub theory_portfolio_id: i32,
+    pub uuid: Uuid,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
 }
 
 #[derive(Debug, Serialize, Deserialize, Insertable)]

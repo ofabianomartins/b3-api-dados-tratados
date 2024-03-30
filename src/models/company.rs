@@ -6,7 +6,11 @@ use diesel::Insertable;
 use serde::Serialize;
 use serde::Deserialize;
 
+use chrono::NaiveDateTime;
+
 use std::fmt::Debug;
+
+use uuid::Uuid;
 
 use crate::schema::*;
 
@@ -18,6 +22,9 @@ pub struct Company {
     pub name: String,
     pub company_type: String,
     pub cnpj: Option<String>,
+    pub uuid: Uuid,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
 }
 
 #[derive(Debug, Serialize, Deserialize, Insertable)]

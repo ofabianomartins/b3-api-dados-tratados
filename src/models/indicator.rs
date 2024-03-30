@@ -6,7 +6,11 @@ use diesel::Insertable;
 use serde::Serialize;
 use serde::Deserialize;
 
+use chrono::NaiveDateTime;
+
 use std::fmt::Debug;
+
+use uuid::Uuid;
 
 use crate::schema::*;
 
@@ -18,7 +22,10 @@ pub struct Indicator {
     pub name: String,
     pub symbol: String,
     pub description: String,
-    pub indicator_type: String
+    pub indicator_type: String,
+    pub uuid: Uuid,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
 }
 
 #[derive(Debug, Serialize, Deserialize, Insertable)]

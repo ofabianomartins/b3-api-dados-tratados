@@ -8,6 +8,10 @@ use serde::Deserialize;
 
 use std::fmt::Debug;
 
+use chrono::NaiveDateTime;
+
+use uuid::Uuid;
+
 use crate::schema::*;
 
 #[derive(Debug, Queryable, Selectable, Identifiable, Serialize, Deserialize)]
@@ -16,7 +20,10 @@ use crate::schema::*;
 pub struct Subsector {
     pub id: i32,
     pub name: String,
-    pub sector_id: i32
+    pub sector_id: i32,
+    pub uuid: Uuid,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
 }
 
 #[derive(Debug, Serialize, Deserialize, Insertable)]

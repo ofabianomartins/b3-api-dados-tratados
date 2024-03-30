@@ -7,8 +7,11 @@ use serde::Serialize;
 use serde::Deserialize;
 
 use chrono::NaiveDate;
+use chrono::NaiveDateTime;
 
 use std::fmt::Debug;
+
+use uuid::Uuid;
 
 use crate::schema::*;
 
@@ -25,6 +28,9 @@ pub struct Ticker {
     pub currency_id: i32,
     pub calendar_id: i32,
     pub segment_id: i32,
+    pub uuid: Uuid,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
 }
 
 #[derive(Debug, Serialize, Deserialize, Insertable)]

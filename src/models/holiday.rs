@@ -9,6 +9,9 @@ use serde::Deserialize;
 use std::fmt::Debug;
 
 use chrono::NaiveDate;
+use chrono::NaiveDateTime;
+
+use uuid::Uuid;
 
 use crate::schema::*;
 
@@ -20,6 +23,9 @@ pub struct Holiday {
     pub name: String,
     pub date: NaiveDate,
     pub calendar_id: i32,
+    pub uuid: Uuid,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
 }
 
 #[derive(Debug, Serialize, Deserialize, Insertable)]
