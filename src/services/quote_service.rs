@@ -15,8 +15,8 @@ use bigdecimal::BigDecimal;
 
 use crate::schema::tickers;
 use crate::schema::quotes;
-use crate::models::Ticker;
-use crate::models::Quote;
+use crate::models::ticker::Ticker;
+use crate::models::quote::Quote;
 use crate::utils::business_calendar::BusinessCalendar;
 
 use crate::services::rentability_service::RentabilityService;

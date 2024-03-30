@@ -13,7 +13,7 @@ use chrono::Utc;
 
 use crate::connections::db_connection;
 use crate::connections::redis_connection;
-use crate::models::Quote;
+use crate::models::quote::Quote;
 use crate::schema::quotes::dsl::*;
 
 #[get("/quotes")]

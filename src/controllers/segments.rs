@@ -9,8 +9,8 @@ use diesel::insert_into;
 use diesel::delete;
 
 use crate::connections::db_connection;
-use crate::models::Segment;
-use crate::models::NewSegment;
+use crate::models::segment::Segment;
+use crate::models::segment::NewSegment;
 use crate::schema::segments::dsl::*;
 
 #[get("/segments")]

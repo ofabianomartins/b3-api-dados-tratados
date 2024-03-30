@@ -7,8 +7,8 @@ use rocket::serde::json;
 use diesel::prelude::*;
 use diesel::insert_into;
 
-use crate::models::Calendar;
-use crate::models::NewCalendar;
+use crate::models::calendar::Calendar;
+use crate::models::calendar::NewCalendar;
 use crate::schema::calendars::dsl::*;
 use crate::connections::db_connection;
 

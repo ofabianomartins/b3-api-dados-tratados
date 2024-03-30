@@ -13,10 +13,10 @@ use bigdecimal::BigDecimal;
 use crate::schema::events;
 use crate::schema::quotes;
 
-use crate::models::Event;
-use crate::models::Ticker;
-use crate::models::Quote;
-use crate::models::NewQuote;
+use crate::models::event::Event;
+use crate::models::ticker::Ticker;
+use crate::models::quote::Quote;
+use crate::models::quote::NewQuote;
 use crate::utils::business_calendar::BusinessCalendar;
 
 use crate::services::quote_service::QuoteParams;

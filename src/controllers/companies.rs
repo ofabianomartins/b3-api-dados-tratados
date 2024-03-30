@@ -11,8 +11,8 @@ use diesel::update;
 use diesel::delete;
 
 use crate::connections::db_connection;
-use crate::models::Company;
-use crate::models::NewCompany;
+use crate::models::company::Company;
+use crate::models::company::NewCompany;
 use crate::schema::companies::dsl::*;
 
 #[get("/companies")]

@@ -7,8 +7,8 @@ use rocket::serde::json;
 use diesel::prelude::*;
 use diesel::insert_into;
 
-use crate::models::Indicator;
-use crate::models::NewIndicator;
+use crate::models::indicator::Indicator;
+use crate::models::indicator::NewIndicator;
 use crate::schema::indicators::dsl::*;
 use crate::connections::db_connection;
 

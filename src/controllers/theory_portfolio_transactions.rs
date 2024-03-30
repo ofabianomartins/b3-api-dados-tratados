@@ -9,8 +9,8 @@ use diesel::insert_into;
 use diesel::delete;
 
 use crate::connections::db_connection;
-use crate::models::TheoryPortfolioTransaction;
-use crate::models::NewTheoryPortfolioTransaction;
+use crate::models::theory_portfolio_transaction::TheoryPortfolioTransaction;
+use crate::models::theory_portfolio_transaction::NewTheoryPortfolioTransaction;
 use crate::schema::theory_portfolio_transactions::dsl::*;
 
 #[get("/theory_portfolio_transactions")]

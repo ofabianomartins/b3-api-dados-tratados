@@ -9,8 +9,8 @@ use diesel::insert_into;
 use diesel::delete;
 
 use crate::connections::db_connection;
-use crate::models::Subsector;
-use crate::models::NewSubsector;
+use crate::models::subsector::Subsector;
+use crate::models::subsector::NewSubsector;
 use crate::schema::subsectors::dsl::*;
 
 #[get("/subsectors")]

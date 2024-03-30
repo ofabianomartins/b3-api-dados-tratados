@@ -11,8 +11,8 @@ use diesel::update;
 use diesel::delete;
 
 use crate::connections::db_connection;
-use crate::models::Sector;
-use crate::models::NewSector;
+use crate::models::sector::Sector;
+use crate::models::sector::NewSector;
 use crate::schema::sectors::dsl::*;
 
 #[get("/sectors")]

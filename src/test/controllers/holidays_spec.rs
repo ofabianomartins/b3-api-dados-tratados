@@ -10,12 +10,12 @@ use diesel::insert_into;
 use chrono::NaiveDate;
 
 use crate::connections::db_connection;
-use crate::models::Holiday;
-use crate::models::NewHoliday;
+use crate::models::holiday::Holiday;
+use crate::models::holiday::NewHoliday;
 use crate::schema::holidays::dsl::*;
 
-use crate::models::Calendar;
-use crate::models::NewCalendar;
+use crate::models::calendar::Calendar;
+use crate::models::calendar::NewCalendar;
 use crate::schema::calendars::dsl::*;
 
 use crate::test::clean_database;

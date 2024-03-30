@@ -11,8 +11,8 @@ use diesel::update;
 use diesel::delete;
 
 use crate::connections::db_connection;
-use crate::models::Currency;
-use crate::models::NewCurrency;
+use crate::models::currency::Currency;
+use crate::models::currency::NewCurrency;
 use crate::schema::currencies::dsl::*;
 
 #[get("/currencies")]

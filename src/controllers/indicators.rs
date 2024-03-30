@@ -9,8 +9,8 @@ use diesel::insert_into;
 use diesel::delete;
 
 use crate::connections::db_connection;
-use crate::models::Indicator;
-use crate::models::NewIndicator;
+use crate::models::indicator::Indicator;
+use crate::models::indicator::NewIndicator;
 use crate::schema::indicators::dsl::*;
 
 #[get("/indicators")]

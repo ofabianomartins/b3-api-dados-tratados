@@ -12,8 +12,8 @@ use diesel::update;
 use diesel::delete;
 
 use crate::connections::db_connection;
-use crate::models::Ticker;
-use crate::models::NewTicker;
+use crate::models::ticker::Ticker;
+use crate::models::ticker::NewTicker;
 use crate::schema::tickers;
 
 #[get("/tickers?<symbol>")]

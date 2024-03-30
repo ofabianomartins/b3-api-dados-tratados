@@ -7,10 +7,10 @@ use rocket::serde::json;
 use diesel::prelude::*;
 use diesel::insert_into;
 
-use crate::models::Sector;
-use crate::models::NewSector;
-use crate::models::Subsector;
-use crate::models::NewSubsector;
+use crate::models::sector::Sector;
+use crate::models::sector::NewSector;
+use crate::models::subsector::Subsector;
+use crate::models::subsector::NewSubsector;
 use crate::schema::subsectors::dsl::*;
 use crate::schema::sectors::dsl::*;
 use crate::connections::db_connection;

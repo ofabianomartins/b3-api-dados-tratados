@@ -7,8 +7,8 @@ use rocket::serde::json;
 use diesel::prelude::*;
 use diesel::insert_into;
 
-use crate::models::Currency;
-use crate::models::NewCurrency;
+use crate::models::currency::Currency;
+use crate::models::currency::NewCurrency;
 use crate::schema::currencies::dsl::*;
 use crate::connections::db_connection;
 

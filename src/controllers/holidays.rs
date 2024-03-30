@@ -9,8 +9,8 @@ use diesel::insert_into;
 use diesel::delete;
 
 use crate::connections::db_connection;
-use crate::models::Holiday;
-use crate::models::NewHoliday;
+use crate::models::holiday::Holiday;
+use crate::models::holiday::NewHoliday;
 use crate::schema::holidays::dsl::*;
 
 #[get("/holidays")]
