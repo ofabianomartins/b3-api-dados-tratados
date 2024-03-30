@@ -62,7 +62,7 @@ const Tables = () => {
                   {list.map((elem, idx) => {
                     return (
                       <CTableRow key={idx} >
-                        <CTableDataCell>{elem.id}</CTableDataCell>
+                        <CTableDataCell>{elem.uuid}</CTableDataCell>
                         <CTableDataCell>{elem.name}</CTableDataCell>
                         <CTableDataCell>{elem.code}</CTableDataCell>
                         <CTableDataCell>

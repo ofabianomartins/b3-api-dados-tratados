@@ -181,9 +181,9 @@ diesel::table! {
     sectors (id) {
         id -> Int4,
         name -> Varchar,
+        uuid -> Uuid,
         created_at -> Timestamptz,
         updated_at -> Timestamptz,
-        uuid -> Uuid,
     }
 }
 
@@ -192,9 +192,9 @@ diesel::table! {
         id -> Int4,
         name -> Varchar,
         subsector_id -> Int4,
+        uuid -> Uuid,
         created_at -> Timestamptz,
         updated_at -> Timestamptz,
-        uuid -> Uuid,
     }
 }
 
@@ -203,9 +203,9 @@ diesel::table! {
         id -> Int4,
         name -> Varchar,
         sector_id -> Int4,
+        uuid -> Uuid,
         created_at -> Timestamptz,
         updated_at -> Timestamptz,
-        uuid -> Uuid,
     }
 }
 
