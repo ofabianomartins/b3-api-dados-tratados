@@ -11,6 +11,7 @@ use uuid::Uuid;
 
 use crate::models::currency::Currency;
 use crate::models::currency::NewCurrency;
+use crate::models::currency::ExternalCurrency;
 use crate::schema::currencies;
 use crate::connections::db_connection;
 
@@ -42,7 +43,7 @@ fn test_get_currencies() {
     assert_eq!(response.status(), Status::Ok);
 
     let test = response.into_string().unwrap();
-    let currencies_list: Vec<Currency> = json::from_str(&test).expect("Failed to read JSON");
+    let currencies_list: Vec<ExternalCurrency> = json::from_str(&test).expect("Failed to read JSON");
     assert_eq!(currencies_list.len(), 1); // Expecting three calendars in the response
     
     clean_database(connection);
@@ -142,7 +143,7 @@ fn test_update_currency() {
 
     // Action: Make a request to the route
     let client = Client::tracked(rocket()).expect("valid rocket instance");
-    let response = client.put(format!("/api/currencies/{}", result_currency.id ))
+    let response = client.put(format!("/api/currencies/{}", result_currency.uuid ))
         .header(ContentType::JSON)
         .body(json::to_string(&new_currency).unwrap())
         .dispatch();
@@ -172,7 +173,7 @@ fn test_delete_currency() {
 
     // Action: Make a request to the route
     let client = Client::tracked(rocket()).expect("valid rocket instance");
-    let response = client.delete(format!("/api/currencies/{}", result_currency.id ))
+    let response = client.delete(format!("/api/currencies/{}", result_currency.uuid ))
         .header(ContentType::JSON)
         .dispatch();
 

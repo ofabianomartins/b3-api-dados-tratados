@@ -1,6 +1,5 @@
 use rocket::get;
 use rocket::http::Status;
-use rocket::response::status::NoContent;
 use rocket::response::status::Custom;
 use rocket::serde::json::Json;
 use rocket::serde::json;
@@ -26,10 +25,10 @@ use crate::schema::currencies;
 use crate::controllers::to_resp;
 
 #[get("/currencies")]
-pub fn index() -> Json<Vec<Currency>> {
+pub fn index() -> Json<Vec<ExternalCurrency>> {
     let conn = &mut db_connection();
     let results = currencies::dsl::currencies
-        .select(Currency::as_select())
+        .select(ExternalCurrency::as_select())
         .load(conn)
         .expect("Error loading currencies");
     return Json(results);
@@ -77,36 +76,52 @@ pub async fn create(new_currency: Json<NewCurrency<'_>>) -> CreatedJson {
     return CreatedJson(Json(result));
 }
 
-#[derive(Responder)]
-#[response(status = 200, content_type = "json")]
-pub struct UpdatedJson(Json<Currency>);
-
-#[put("/currencies/<currency_id>", format="json", data="<currency>")]
-pub fn update_action(currency_id: i32, currency: Json<NewCurrency<'_>>) -> UpdatedJson {
+#[put("/currencies/<currency_uuid>", format="json", data="<currency>")]
+pub fn update_action(currency_uuid: &str, currency: Json<NewCurrency<'_>>) -> Custom<String> {
     let conn = &mut db_connection();
-    update(currencies::dsl::currencies.find(currency_id))
-        .set((
-            currencies::dsl::name.eq(currency.name),
-            currencies::dsl::code.eq(currency.code)
-        ))
-        .returning(Currency::as_returning())
-        .execute(conn)
-        .expect("Error loading currencies");
 
-    let result = currencies::dsl::currencies
-        .find(currency_id)
-        .select(Currency::as_select())
-        .first(conn)
-        .expect("Error loading currencies");
-    return UpdatedJson(Json(result));
+    match Uuid::parse_str(currency_uuid) {
+        Ok(x) => {
+            match find_row_by_uuid(x, conn) {
+                Ok(Some(_record)) => {
+                    let row = update(currencies::dsl::currencies)
+                        .filter(currencies::dsl::uuid.eq(x))
+                        .set((
+                            currencies::dsl::name.eq(currency.name),
+                            currencies::dsl::code.eq(currency.code)
+                        ))
+                        .returning(ExternalCurrency::as_returning())
+                        .execute(conn)
+                        .expect("Error loading currencies");
+                    Custom(Status::Ok, json::to_string(&row).unwrap())
+                },
+                Ok(None) => Custom(Status::NotFound, to_resp(format!("Currency {} not found!", currency_uuid))),
+                Err(x) => Custom(Status::InternalServerError, to_resp(format!("Internal error {}",x)))
+            }
+        },
+        Err(x) => Custom(Status::UnprocessableEntity, to_resp(format!("uuid {} wrong format!", x)))
+    }
 }
 
-#[delete("/currencies/<currency_id>")]
-pub fn destroy(currency_id: i32) -> NoContent {
+#[delete("/currencies/<currency_uuid>")]
+pub fn destroy(currency_uuid: &str) -> Custom<String> {
     let conn = &mut db_connection();
-    delete(currencies::dsl::currencies.find(currency_id))
-        .execute(conn)
-        .expect("Error loading currencies");
-    return NoContent;
+
+    match Uuid::parse_str(currency_uuid) {
+        Ok(x) => {
+            match find_row_by_uuid(x, conn) {
+                Ok(Some(_record)) => {
+                    delete(currencies::dsl::currencies)
+                        .filter(currencies::dsl::uuid.eq(x))
+                        .execute(conn)
+                        .expect("Error loading currencies");
+                    Custom(Status::NoContent, "".to_string())
+                },
+                Ok(None) => Custom(Status::NotFound, to_resp(format!("Currency {} not found!", currency_uuid))),
+                Err(x) => Custom(Status::InternalServerError, to_resp(format!("Internal error {}",x)))
+            }
+        },
+        Err(x) => Custom(Status::UnprocessableEntity, to_resp(format!("uuid {} wrong format!", x)))
+    }
 }
 
