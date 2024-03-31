@@ -7,25 +7,31 @@ use rocket::serde::json;
 use diesel::prelude::*;
 use diesel::insert_into;
 
+use uuid::Uuid;
+
 use crate::models::sector::Sector;
 use crate::models::sector::NewSector;
-use crate::schema::sectors::dsl::*;
+use crate::models::sector::ExternalSector;
+use crate::schema::sectors;
 use crate::connections::db_connection;
 
 use crate::test::clean_database;
+
+fn setup_data(conn: &mut PgConnection) -> Sector {
+    let new_sector = NewSector { name: "Calendar 2" };
+    return insert_into(sectors::dsl::sectors)
+        .values(&new_sector)
+        .returning(Sector::as_returning())
+        .get_result(conn)
+        .expect("Failed to insert sample data into the database");
+}
 
 #[test]
 fn test_get_sectors() {
     let connection = &mut db_connection();
 
     clean_database(connection);
-
-    let sector = NewSector { name: "Calendar 2" };
-    insert_into(sectors)
-        .values(&sector)
-        .returning(Sector::as_returning())
-        .get_result(connection)
-        .expect("Failed to insert sample data into the database");
+    setup_data(connection);
 
     // Action: Make a request to the route
     let client = Client::tracked(rocket()).expect("valid rocket instance");
@@ -37,7 +43,7 @@ fn test_get_sectors() {
     assert_eq!(response.status(), Status::Ok);
 
     let test = response.into_string().unwrap();
-    let sectors_list: Vec<Sector> = json::from_str(&test).expect("Failed to read JSON");
+    let sectors_list: Vec<ExternalSector> = json::from_str(&test).expect("Failed to read JSON");
     assert_eq!(sectors_list.len(), 1); // Expecting three calendars in the response
     
     clean_database(connection);
@@ -48,23 +54,48 @@ fn test_show_sector() {
     let connection = &mut db_connection();
 
     clean_database(connection);
+    let result_sector = setup_data(connection);
 
-    let sector = NewSector { name: "Calendar 2" };
-    let result_sector = insert_into(sectors)
-        .values(&sector)
-        .returning(Sector::as_returning())
-        .get_result(connection)
-        .expect("Failed to insert sample data into the database");
+    let client = Client::tracked(rocket()).expect("valid rocket instance");
+    let response = client.get(format!("/api/sectors/{}", result_sector.uuid ))
+        .header(ContentType::JSON)
+        .dispatch();
+
+    assert_eq!(response.status(), Status::Ok);
+
+    clean_database(connection);
+}
+
+#[test]
+fn test_show_sectors_not_exists() {
+    let connection = &mut db_connection();
+    clean_database(connection);
 
     // Action: Make a request to the route
     let client = Client::tracked(rocket()).expect("valid rocket instance");
-    let response = client.get(format!("/api/sectors/{}", result_sector.id ))
+    let response = client.get(format!("/api/sectors/{}", Uuid::new_v4()))
         .header(ContentType::JSON)
         .dispatch();
 
     // Assert: Check if the response contains the expected data
-    assert_eq!(response.status(), Status::Ok);
-    // assert_eq!(response.len(), 2); // Expecting three calendars in the response
+    assert_eq!(response.status(), Status::NotFound);
+    // assert_eq!(response.len(), 2); // Expecting three sectorss in the response
+
+    clean_database(connection);
+}
+
+#[test]
+fn test_show_sectors_wrong_uuid() {
+    let connection = &mut db_connection();
+    clean_database(connection);
+
+    // Action: Make a request to the route
+    let client = Client::tracked(rocket()).expect("valid rocket instance");
+    let response = client.get("/api/sectors/test2")
+        .header(ContentType::JSON)
+        .dispatch();
+
+    assert_eq!(response.status(), Status::UnprocessableEntity);
 
     clean_database(connection);
 }
@@ -93,19 +124,11 @@ fn test_post_sectors() {
 
 #[test]
 fn test_update_sector() {
-    // Setup: Insert sample data into the test database
-    
     let connection = &mut db_connection();
 
     clean_database(connection);
 
-    let sector = NewSector { name: "Calendar 2" };
-    let result_sector = insert_into(sectors)
-        .values(&sector)
-        .returning(Sector::as_returning())
-        .get_result(connection)
-        .expect("Failed to insert sample data into the database");
-
+    let result_sector = setup_data(connection);
     let new_sector = NewSector { name: "Calendar 2 updated" };
 
     // Action: Make a request to the route
@@ -115,7 +138,7 @@ fn test_update_sector() {
         .body(json::to_string(&new_sector).unwrap())
         .dispatch();
 
-    let result = sectors
+    let result = sectors::dsl::sectors
         .find(result_sector.id)
         .select(Sector::as_select())
         .load(connection)
@@ -131,18 +154,10 @@ fn test_update_sector() {
 
 #[test]
 fn test_delete_sector() {
-    // Setup: Insert sample data into the test database
-    
     let connection = &mut db_connection();
 
     clean_database(connection);
-
-    let sector = NewSector { name: "Calendar 2" };
-    let result_sector = insert_into(sectors)
-        .values(&sector)
-        .returning(Sector::as_returning())
-        .get_result(connection)
-        .expect("Failed to insert sample data into the database");
+    let result_sector = setup_data(connection);
 
     // Action: Make a request to the route
     let client = Client::tracked(rocket()).expect("valid rocket instance");
@@ -150,7 +165,7 @@ fn test_delete_sector() {
         .header(ContentType::JSON)
         .dispatch();
 
-    let result = sectors
+    let result = sectors::dsl::sectors
         .find(result_sector.id)
         .select(Sector::as_select())
         .load(connection)

@@ -27,6 +27,18 @@ pub struct Company {
     pub updated_at: NaiveDateTime,
 }
 
+#[derive(Debug, Queryable, Selectable, Serialize, Deserialize)]
+#[diesel(table_name = companies)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct ExternalCompany {
+    pub name: String,
+    pub company_type: String,
+    pub cnpj: Option<String>,
+    pub uuid: Uuid,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
+}
+
 #[derive(Debug, Serialize, Deserialize, Insertable)]
 #[diesel(table_name = companies)]
 pub struct NewCompany<'a> {

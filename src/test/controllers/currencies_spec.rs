@@ -7,17 +7,19 @@ use rocket::serde::json;
 use diesel::prelude::*;
 use diesel::insert_into;
 
+use uuid::Uuid;
+
 use crate::models::currency::Currency;
 use crate::models::currency::NewCurrency;
-use crate::schema::currencies::dsl::*;
+use crate::schema::currencies;
 use crate::connections::db_connection;
 
 use crate::test::clean_database;
 
 fn setup_data(conn: &mut PgConnection) -> Currency {
-    let currency = NewCurrency { name: "Calendar 2", code: "test_calendar2" };
-    return insert_into(currencies)
-        .values(&currency)
+    let new_currency = NewCurrency { name: "Calendar 2", code: "test_calendar2" };
+    return insert_into(currencies::dsl::currencies)
+        .values(&new_currency)
         .returning(Currency::as_returning())
         .get_result(conn)
         .expect("Failed to insert sample data into the database");
@@ -48,8 +50,6 @@ fn test_get_currencies() {
 
 #[test]
 fn test_show_currency() {
-    // Setup: Insert sample data into the test database
-    
     let connection = &mut db_connection();
 
     clean_database(connection);
@@ -57,7 +57,7 @@ fn test_show_currency() {
 
     // Action: Make a request to the route
     let client = Client::tracked(rocket()).expect("valid rocket instance");
-    let response = client.get(format!("/api/currencies/{}", result_currency.id ))
+    let response = client.get(format!("/api/currencies/{}", result_currency.uuid ))
         .header(ContentType::JSON)
         .dispatch();
 
@@ -67,6 +67,41 @@ fn test_show_currency() {
 
     clean_database(connection);
 }
+
+#[test]
+fn test_show_currencies_not_exists() {
+    let connection = &mut db_connection();
+    clean_database(connection);
+
+    // Action: Make a request to the route
+    let client = Client::tracked(rocket()).expect("valid rocket instance");
+    let response = client.get(format!("/api/currencies/{}", Uuid::new_v4()))
+        .header(ContentType::JSON)
+        .dispatch();
+
+    // Assert: Check if the response contains the expected data
+    assert_eq!(response.status(), Status::NotFound);
+    // assert_eq!(response.len(), 2); // Expecting three currenciess in the response
+
+    clean_database(connection);
+}
+
+#[test]
+fn test_show_currencies_wrong_uuid() {
+    let connection = &mut db_connection();
+    clean_database(connection);
+
+    // Action: Make a request to the route
+    let client = Client::tracked(rocket()).expect("valid rocket instance");
+    let response = client.get("/api/currencies/test2")
+        .header(ContentType::JSON)
+        .dispatch();
+
+    assert_eq!(response.status(), Status::UnprocessableEntity);
+
+    clean_database(connection);
+}
+
 
 #[test]
 fn test_post_currencies() {
@@ -112,7 +147,7 @@ fn test_update_currency() {
         .body(json::to_string(&new_currency).unwrap())
         .dispatch();
 
-    let result = currencies
+    let result = currencies::dsl::currencies
         .find(result_currency.id)
         .select(Currency::as_select())
         .load(connection)
@@ -141,7 +176,7 @@ fn test_delete_currency() {
         .header(ContentType::JSON)
         .dispatch();
 
-    let result = currencies
+    let result = currencies::dsl::currencies
         .find(result_currency.id)
         .select(Currency::as_select())
         .load(connection)

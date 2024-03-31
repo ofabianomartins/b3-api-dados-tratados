@@ -7,16 +7,23 @@ use rocket::serde::json;
 use diesel::prelude::*;
 use diesel::insert_into;
 
+use uuid::Uuid;
+
 use crate::models::company::Company;
 use crate::models::company::NewCompany;
-use crate::schema::companies::dsl::*;
+use crate::models::company::ExternalCompany;
+use crate::schema::companies;
 use crate::connections::db_connection;
 
 use crate::test::clean_database;
 
 fn setup_data(conn: &mut PgConnection) -> Company {
-    let new_company = NewCompany { name: "Calendar 2", company_type: "DEFAULT", cnpj: "00.000.000/0001-00" };
-    return insert_into(companies)
+    let new_company = NewCompany {
+        name: "Calendar 2",
+        company_type: "DEFAULT",
+        cnpj: "00.000.000/0001-00"
+    };
+    return insert_into(companies::dsl::companies)
         .values(&new_company)
         .returning(Company::as_returning())
         .get_result(conn)
@@ -38,7 +45,7 @@ fn test_get_companies() {
     assert_eq!(response.status(), Status::Ok);
 
     let test = response.into_string().unwrap();
-    let companies_list: Vec<Company> = json::from_str(&test).expect("Failed to read JSON");
+    let companies_list: Vec<ExternalCompany> = json::from_str(&test).expect("Failed to read JSON");
     assert_eq!(companies_list.len(), 1); // Expecting three calendars in the response
     
     clean_database(connection);
@@ -53,13 +60,47 @@ fn test_show_companies() {
     let result_company = setup_data(connection);
 
     let client = Client::tracked(rocket()).expect("valid rocket instance");
-    let response = client.get(format!("/api/companies/{}", result_company.id ))
+    let response = client.get(format!("/api/companies/{}", result_company.uuid ))
         .header(ContentType::JSON)
         .dispatch();
 
     // Assert: Check if the response contains the expected data
     assert_eq!(response.status(), Status::Ok);
     // assert_eq!(response.len(), 2); // Expecting three calendars in the response
+
+    clean_database(connection);
+}
+
+#[test]
+fn test_show_companies_not_exists() {
+    let connection = &mut db_connection();
+    clean_database(connection);
+
+    // Action: Make a request to the route
+    let client = Client::tracked(rocket()).expect("valid rocket instance");
+    let response = client.get(format!("/api/companies/{}", Uuid::new_v4()))
+        .header(ContentType::JSON)
+        .dispatch();
+
+    // Assert: Check if the response contains the expected data
+    assert_eq!(response.status(), Status::NotFound);
+    // assert_eq!(response.len(), 2); // Expecting three companiess in the response
+
+    clean_database(connection);
+}
+
+#[test]
+fn test_show_companies_wrong_uuid() {
+    let connection = &mut db_connection();
+    clean_database(connection);
+
+    // Action: Make a request to the route
+    let client = Client::tracked(rocket()).expect("valid rocket instance");
+    let response = client.get("/api/companies/test2")
+        .header(ContentType::JSON)
+        .dispatch();
+
+    assert_eq!(response.status(), Status::UnprocessableEntity);
 
     clean_database(connection);
 }
@@ -109,7 +150,7 @@ fn test_update_currency() {
         .body(json::to_string(&new_company).unwrap())
         .dispatch();
 
-    let result = companies
+    let result = companies::dsl::companies
         .find(result_company.id)
         .select(Company::as_select())
         .load(connection)
@@ -140,7 +181,7 @@ fn test_delete_company() {
         .header(ContentType::JSON)
         .dispatch();
 
-    let result = companies
+    let result = companies::dsl::companies
         .find(result_company.id)
         .select(Company::as_select())
         .load(connection)
