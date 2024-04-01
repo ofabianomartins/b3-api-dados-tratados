@@ -145,7 +145,7 @@ fn test_update_currency() {
 
     // Action: Make a request to the route
     let client = Client::tracked(rocket()).expect("valid rocket instance");
-    let response = client.put(format!("/api/companies/{}", result_company.id ))
+    let response = client.put(format!("/api/companies/{}", result_company.uuid ))
         .header(ContentType::JSON)
         .body(json::to_string(&new_company).unwrap())
         .dispatch();
@@ -177,7 +177,7 @@ fn test_delete_company() {
 
     // Action: Make a request to the route
     let client = Client::tracked(rocket()).expect("valid rocket instance");
-    let response = client.delete(format!("/api/companies/{}", result_company.id ))
+    let response = client.delete(format!("/api/companies/{}", result_company.uuid ))
         .header(ContentType::JSON)
         .dispatch();
 

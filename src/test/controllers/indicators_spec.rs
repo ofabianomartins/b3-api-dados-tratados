@@ -9,6 +9,7 @@ use diesel::insert_into;
 
 use crate::models::indicator::Indicator;
 use crate::models::indicator::NewIndicator;
+use crate::models::indicator::ExternalIndicator;
 use crate::schema::indicators::dsl::*;
 use crate::connections::db_connection;
 
@@ -43,7 +44,7 @@ fn test_get_indicators() {
     assert_eq!(response.status(), Status::Ok);
 
     let test = response.into_string().unwrap();
-    let indicators_list: Vec<Indicator> = json::from_str(&test).expect("Failed to read JSON");
+    let indicators_list: Vec<ExternalIndicator> = json::from_str(&test).expect("Failed to read JSON");
     assert_eq!(indicators_list.len(), 1); // Expecting three calendars in the response
     
     clean_database(connection);
@@ -58,7 +59,7 @@ fn test_show_indicators() {
     let result_indicator = setup_data(connection);
 
     let client = Client::tracked(rocket()).expect("valid rocket instance");
-    let response = client.get(format!("/api/indicators/{}", result_indicator.id ))
+    let response = client.get(format!("/api/indicators/{}", result_indicator.uuid ))
         .header(ContentType::JSON)
         .dispatch();
 
@@ -107,7 +108,7 @@ fn test_delete_indicator() {
 
     // Action: Make a request to the route
     let client = Client::tracked(rocket()).expect("valid rocket instance");
-    let response = client.delete(format!("/api/indicators/{}", result_indicator.id ))
+    let response = client.delete(format!("/api/indicators/{}", result_indicator.uuid ))
         .header(ContentType::JSON)
         .dispatch();
 

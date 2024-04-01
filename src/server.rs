@@ -29,6 +29,7 @@ fn rocket() -> Rocket<Build> {
                 controllers::theory_portfolios::create,
                 controllers::theory_portfolios::destroy,
                 controllers::quotes::index,
+                controllers::quotes::show,
                 controllers::quotes::create,
                 controllers::quotes::destroy,
                 controllers::tickers::index,

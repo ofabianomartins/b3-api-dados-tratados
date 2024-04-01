@@ -1,41 +1,61 @@
 use rocket::get;
-use rocket::response::status::NoContent;
+use rocket::http::Status;
+use rocket::response::status::Custom;
+use rocket::serde::json;
 use rocket::serde::json::Json;
 
+use diesel::PgConnection;
 use diesel::SelectableHelper;
 use diesel::RunQueryDsl;
 use diesel::query_dsl::QueryDsl;
+use diesel::QueryResult;
+use diesel::ExpressionMethods;
+use diesel::OptionalExtension;
 use diesel::insert_into;
 use diesel::delete;
+
+use uuid::Uuid;
 
 use crate::connections::db_connection;
 use crate::models::segment::Segment;
 use crate::models::segment::NewSegment;
-use crate::schema::segments::dsl::*;
+use crate::models::segment::ExternalSegment;
+use crate::schema::segments;
+use crate::controllers::to_resp;
 
 #[get("/segments")]
-pub fn index() -> Json<Vec<Segment>> {
+pub fn index() -> Json<Vec<ExternalSegment>> {
     let conn = &mut db_connection();
-    let results = segments
-        .select(Segment::as_select())
+    let results = segments::dsl::segments
+        .select(ExternalSegment::as_select())
         .load(conn)
         .expect("Error loading segments");
     return Json(results);
 }
 
-#[derive(Responder)]
-#[response(status = 200, content_type = "json")]
-pub struct ShowJson(Json<Segment>);
-
-#[get("/segments/<segment_id>")]
-pub fn show(segment_id: i32) -> ShowJson {
-    let conn = &mut db_connection();
-    let result = segments
-        .find(segment_id)
-        .select(Segment::as_select())
+// Define a function to search for a row by UUID
+fn find_row_by_uuid(uuid: Uuid, conn: &mut PgConnection) -> QueryResult<Option<ExternalSegment>> {
+    return segments::dsl::segments
+        .filter(segments::dsl::uuid.eq(uuid))
+        .select(ExternalSegment::as_select())
         .first(conn)
-        .expect("Error loading segments");
-    return ShowJson(Json(result));
+        .optional();
+}
+
+#[get("/segments/<segment_uuid>")]
+pub fn show(segment_uuid: &str) -> Custom<String> {
+    let conn = &mut db_connection();
+
+    match Uuid::parse_str(segment_uuid) {
+        Ok(x) => {
+            match find_row_by_uuid(x, conn) {
+                Ok(Some(row)) => Custom(Status::Ok, json::to_string(&row).unwrap()),
+                Ok(None) => Custom(Status::NotFound, to_resp(format!("Currency {} not found!", segment_uuid))),
+                Err(x) => Custom(Status::InternalServerError, to_resp(format!("Internal error {}",x)))
+            }
+        },
+        Err(x) => Custom(Status::UnprocessableEntity, to_resp(format!("uuid {} wrong format!", x)))
+    }
 }
 
 
@@ -46,7 +66,7 @@ pub struct CreatedJson(Json<Segment>);
 #[post("/segments", format="json", data = "<new_segment>")]
 pub async fn create(new_segment: Json<NewSegment<'_>>) -> CreatedJson {
     let conn = &mut db_connection();
-    let result = insert_into(segments)
+    let result = insert_into(segments::dsl::segments)
         .values(&*new_segment)
         .returning(Segment::as_returning())
         .get_result(conn)
@@ -55,12 +75,25 @@ pub async fn create(new_segment: Json<NewSegment<'_>>) -> CreatedJson {
     return CreatedJson(Json(result));
 }
 
-#[delete("/segments/<segment_id>")]
-pub fn destroy(segment_id: i32) -> NoContent {
+#[delete("/segments/<segment_uuid>")]
+pub fn destroy(segment_uuid: &str) -> Custom<String> {
     let conn = &mut db_connection();
-    delete(segments.find(segment_id))
-        .execute(conn)
-        .expect("Error loading segments");
-    return NoContent;
+
+    match Uuid::parse_str(segment_uuid) {
+        Ok(x) => {
+            match find_row_by_uuid(x, conn) {
+                Ok(Some(_record)) => {
+                    delete(segments::dsl::segments)
+                        .filter(segments::dsl::uuid.eq(x))
+                        .execute(conn)
+                        .expect("Error loading segments");
+                    Custom(Status::NoContent, "".to_string())
+                },
+                Ok(None) => Custom(Status::NotFound, to_resp(format!("Segment {} not found!", segment_uuid))),
+                Err(x) => Custom(Status::InternalServerError, to_resp(format!("Internal error {}",x)))
+            }
+        },
+        Err(x) => Custom(Status::UnprocessableEntity, to_resp(format!("uuid {} wrong format!", x)))
+    }
 }
 

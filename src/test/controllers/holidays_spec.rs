@@ -89,7 +89,7 @@ fn test_show_holidays() {
 
     // Action: Make a request to the route
     let client = Client::tracked(rocket()).expect("valid rocket instance");
-    let response = client.get(format!("/api/holidays/{}", result_holiday.id ))
+    let response = client.get(format!("/api/holidays/{}", result_holiday.uuid ))
         .header(ContentType::JSON)
         .dispatch();
 
@@ -164,7 +164,7 @@ fn test_delete_holiday() {
 
     // Action: Make a request to the route
     let client = Client::tracked(rocket()).expect("valid rocket instance");
-    let response = client.delete(format!("/api/holidays/{}", result_holiday.id ))
+    let response = client.delete(format!("/api/holidays/{}", result_holiday.uuid ))
         .header(ContentType::JSON)
         .dispatch();
 

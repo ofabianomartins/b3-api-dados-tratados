@@ -123,5 +123,5 @@ pub fn destroy(currency_uuid: &str) -> Custom<String> {
         },
         Err(x) => Custom(Status::UnprocessableEntity, to_resp(format!("uuid {} wrong format!", x)))
     }
-}
 
+}

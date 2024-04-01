@@ -1,6 +1,5 @@
 use rocket::get;
 use rocket::http::Status;
-use rocket::response::status::NoContent;
 use rocket::response::status::Custom;
 use rocket::serde::json;
 use rocket::serde::json::Json;
@@ -19,7 +18,6 @@ use diesel::delete;
 use uuid::Uuid;
 
 use crate::connections::db_connection;
-use crate::models::sector::Sector;
 use crate::models::sector::NewSector;
 use crate::models::sector::ExternalSector;
 use crate::schema::sectors;
@@ -77,33 +75,49 @@ pub async fn create(new_sector: Json<NewSector<'_>>) -> CreatedJson {
     return CreatedJson(Json(result));
 }
 
-#[derive(Responder)]
-#[response(status = 200, content_type = "json")]
-pub struct UpdatedJson(Json<ExternalSector>);
-
-#[put("/sectors/<sector_id>", format="json", data="<sector>")]
-pub fn update_action(sector_id: i32, sector: Json<NewSector<'_>>) -> UpdatedJson {
+#[put("/sectors/<sector_uuid>", format="json", data="<sector>")]
+pub fn update_action(sector_uuid: &str, sector: Json<NewSector<'_>>) -> Custom<String> {
     let conn = &mut db_connection();
-    update(sectors::dsl::sectors.find(sector_id))
-        .set(sectors::dsl::name.eq(sector.name))
-        .returning(Sector::as_returning())
-        .execute(conn)
-        .expect("Error loading sectors");
 
-    let result = sectors::dsl::sectors
-        .find(sector_id)
-        .select(ExternalSector::as_select())
-        .first(conn)
-        .expect("Error loading sectors");
-    return UpdatedJson(Json(result));
+    match Uuid::parse_str(sector_uuid) {
+        Ok(x) => {
+            match find_row_by_uuid(x, conn) {
+                Ok(Some(_record)) => {
+                    let row = update(sectors::dsl::sectors)
+                        .filter(sectors::dsl::uuid.eq(x))
+                        .set(sectors::dsl::name.eq(sector.name))
+                        .returning(ExternalSector::as_returning())
+                        .execute(conn)
+                        .expect("Error loading sectors");
+                    Custom(Status::Ok, json::to_string(&row).unwrap())
+                },
+                Ok(None) => Custom(Status::NotFound, to_resp(format!("Currency {} not found!", sector_uuid))),
+                Err(x) => Custom(Status::InternalServerError, to_resp(format!("Internal error {}",x)))
+            }
+        },
+        Err(x) => Custom(Status::UnprocessableEntity, to_resp(format!("uuid {} wrong format!", x)))
+    }
 }
 
-#[delete("/sectors/<sector_id>")]
-pub fn destroy(sector_id: i32) -> NoContent {
+#[delete("/sectors/<sector_uuid>")]
+pub fn destroy(sector_uuid: &str) -> Custom<String> {
     let conn = &mut db_connection();
-    delete(sectors::dsl::sectors.find(sector_id))
-        .execute(conn)
-        .expect("Error loading sectors");
-    return NoContent;
+
+    match Uuid::parse_str(sector_uuid) {
+        Ok(x) => {
+            match find_row_by_uuid(x, conn) {
+                Ok(Some(_record)) => {
+                    delete(sectors::dsl::sectors)
+                        .filter(sectors::dsl::uuid.eq(x))
+                        .execute(conn)
+                        .expect("Error loading sectors");
+                    Custom(Status::NoContent, "".to_string())
+                },
+                Ok(None) => Custom(Status::NotFound, to_resp(format!("Sector {} not found!", sector_uuid))),
+                Err(x) => Custom(Status::InternalServerError, to_resp(format!("Internal error {}",x)))
+            }
+        },
+        Err(x) => Custom(Status::UnprocessableEntity, to_resp(format!("uuid {} wrong format!", x)))
+    }
 }
 

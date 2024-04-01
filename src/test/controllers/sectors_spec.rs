@@ -133,7 +133,7 @@ fn test_update_sector() {
 
     // Action: Make a request to the route
     let client = Client::tracked(rocket()).expect("valid rocket instance");
-    let response = client.put(format!("/api/sectors/{}", result_sector.id ))
+    let response = client.put(format!("/api/sectors/{}", result_sector.uuid ))
         .header(ContentType::JSON)
         .body(json::to_string(&new_sector).unwrap())
         .dispatch();
@@ -161,7 +161,7 @@ fn test_delete_sector() {
 
     // Action: Make a request to the route
     let client = Client::tracked(rocket()).expect("valid rocket instance");
-    let response = client.delete(format!("/api/sectors/{}", result_sector.id ))
+    let response = client.delete(format!("/api/sectors/{}", result_sector.uuid ))
         .header(ContentType::JSON)
         .dispatch();
 

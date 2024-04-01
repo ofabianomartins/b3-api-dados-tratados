@@ -1,6 +1,5 @@
 use rocket::get;
 use rocket::http::Status;
-use rocket::response::status::NoContent;
 use rocket::response::status::Custom;
 use rocket::serde::json;
 use rocket::serde::json::Json;
@@ -77,37 +76,53 @@ pub async fn create(new_company: Json<NewCompany<'_>>) -> CreatedJson {
     return CreatedJson(Json(result));
 }
 
-#[derive(Responder)]
-#[response(status = 200, content_type = "json")]
-pub struct UpdatedJson(Json<Company>);
-
-#[put("/companies/<company_id>", format="json", data="<company>")]
-pub fn update_action(company_id: i32, company: Json<NewCompany<'_>>) -> UpdatedJson {
+#[put("/companies/<company_uuid>", format="json", data="<company>")]
+pub fn update_action(company_uuid: &str, company: Json<NewCompany<'_>>) -> Custom<String> {
     let conn = &mut db_connection();
-    update(companies::dsl::companies.find(company_id))
-        .set((
-            companies::dsl::name.eq(company.name),
-            companies::dsl::company_type.eq(company.company_type),
-            companies::dsl::cnpj.eq(company.cnpj)
-        ))
-        .returning(Company::as_returning())
-        .execute(conn)
-        .expect("Error loading companies");
 
-    let result = companies::dsl::companies
-        .find(company_id)
-        .select(Company::as_select())
-        .first(conn)
-        .expect("Error loading companies");
-    return UpdatedJson(Json(result));
+    match Uuid::parse_str(company_uuid) {
+        Ok(x) => {
+            match find_row_by_uuid(x, conn) {
+                Ok(Some(_record)) => {
+                    let row = update(companies::dsl::companies)
+                        .filter(companies::dsl::uuid.eq(x))
+                        .set((
+                            companies::dsl::name.eq(company.name),
+                            companies::dsl::company_type.eq(company.company_type),
+                            companies::dsl::cnpj.eq(company.cnpj)
+                        ))
+                        .returning(ExternalCompany::as_returning())
+                        .execute(conn)
+                        .expect("Error loading currencies");
+                    Custom(Status::Ok, json::to_string(&row).unwrap())
+                },
+                Ok(None) => Custom(Status::NotFound, to_resp(format!("Currency {} not found!", company_uuid))),
+                Err(x) => Custom(Status::InternalServerError, to_resp(format!("Internal error {}",x)))
+            }
+        },
+        Err(x) => Custom(Status::UnprocessableEntity, to_resp(format!("uuid {} wrong format!", x)))
+    }
 }
 
-#[delete("/companies/<company_id>")]
-pub fn destroy(company_id: i32) -> NoContent {
+#[delete("/companies/<company_uuid>")]
+pub fn destroy(company_uuid: &str) -> Custom<String> {
     let conn = &mut db_connection();
-    delete(companies::dsl::companies.find(company_id))
-        .execute(conn)
-        .expect("Error loading companies");
-    return NoContent;
+
+    match Uuid::parse_str(company_uuid) {
+        Ok(x) => {
+            match find_row_by_uuid(x, conn) {
+                Ok(Some(_record)) => {
+                    delete(companies::dsl::companies)
+                        .filter(companies::dsl::uuid.eq(x))
+                        .execute(conn)
+                        .expect("Error loading companies");
+                    Custom(Status::NoContent, "".to_string())
+                },
+                Ok(None) => Custom(Status::NotFound, to_resp(format!("Currency {} not found!", company_uuid))),
+                Err(x) => Custom(Status::InternalServerError, to_resp(format!("Internal error {}",x)))
+            }
+        },
+        Err(x) => Custom(Status::UnprocessableEntity, to_resp(format!("uuid {} wrong format!", x)))
+    }
 }
 
