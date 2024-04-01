@@ -30,6 +30,19 @@ pub struct IndicatorValue {
     pub updated_at: NaiveDateTime,
 }
 
+#[derive(Debug, Queryable, Selectable, Serialize, Deserialize)]
+#[diesel(table_name = indicator_values)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct ExternalIndicatorValue {
+    pub date: NaiveDate,
+    pub indicator_id: i32,
+    pub company_id: i32,
+    pub close: BigDecimal,
+    pub uuid: Uuid,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
+}
+
 #[derive(Debug, Serialize, Deserialize, Insertable)]
 #[diesel(table_name = indicator_values)]
 pub struct NewIndicatorValue {

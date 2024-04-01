@@ -33,6 +33,23 @@ pub struct Ticker {
     pub updated_at: NaiveDateTime,
 }
 
+#[derive(Debug, Queryable, Selectable, Serialize, Deserialize)]
+#[diesel(table_name = tickers)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct ExternalTicker {
+    pub symbol: String,
+    pub security_type: String,
+    pub unit: String,
+    pub creation_date: NaiveDate,
+    pub company_id: i32,
+    pub currency_id: i32,
+    pub calendar_id: i32,
+    pub segment_id: i32,
+    pub uuid: Uuid,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
+}
+
 #[derive(Debug, Serialize, Deserialize, Insertable)]
 #[diesel(table_name = tickers)]
 pub struct NewTicker<'a> {
