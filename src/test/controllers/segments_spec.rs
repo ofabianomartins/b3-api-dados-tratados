@@ -13,7 +13,6 @@ use crate::models::subsector::Subsector;
 use crate::models::subsector::NewSubsector;
 use crate::models::segment::Segment;
 use crate::models::segment::NewSegment;
-use crate::models::segment::ExternalSegment;
 use crate::schema::subsectors::dsl::*;
 use crate::schema::sectors::dsl::*;
 use crate::schema::segments::dsl::*;
@@ -59,7 +58,7 @@ fn test_get_segments() {
     assert_eq!(response.status(), Status::Ok);
 
     let test = response.into_string().unwrap();
-    let segments_list: Vec<ExternalSegment> = json::from_str(&test).expect("Failed to read JSON");
+    let segments_list: Vec<Segment> = json::from_str(&test).expect("Failed to read JSON");
     assert_eq!(segments_list.len(), 1); // Expecting three calendars in the response
     
     clean_database(connection);
@@ -73,7 +72,7 @@ fn test_show_segments() {
     let result_segment = setup_data(connection);
 
     let client = Client::tracked(rocket()).expect("valid rocket instance");
-    let response = client.get(format!("/api/segments/{}", result_segment.uuid))
+    let response = client.get(format!("/api/segments/{}", result_segment.id))
         .header(ContentType::JSON)
         .dispatch();
 
@@ -131,7 +130,7 @@ fn test_delete_segments() {
 
     // Action: Make a request to the route
     let client = Client::tracked(rocket()).expect("valid rocket instance");
-    let response = client.delete(format!("/api/segments/{}", result_segment.uuid ))
+    let response = client.delete(format!("/api/segments/{}", result_segment.id ))
         .header(ContentType::JSON)
         .dispatch();
 

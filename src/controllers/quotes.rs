@@ -8,7 +8,6 @@ use diesel::PgConnection;
 use diesel::SelectableHelper;
 use diesel::RunQueryDsl;
 use diesel::OptionalExtension;
-use diesel::ExpressionMethods;
 use diesel::QueryResult;
 use diesel::query_dsl::QueryDsl;
 use diesel::delete;
@@ -17,48 +16,40 @@ use redis::Commands;
 
 use chrono::Utc;
 
-use uuid::Uuid;
-
 use crate::connections::db_connection;
 use crate::connections::redis_connection;
 use crate::models::quote::Quote;
-use crate::models::quote::ExternalQuote;
 use crate::schema::quotes;
 
 use crate::controllers::to_resp;
 
 #[get("/quotes")]
-pub fn index() -> Json<Vec<ExternalQuote>> {
+pub fn index() -> Json<Vec<Quote>> {
     let conn = &mut db_connection();
     let results = quotes::dsl::quotes
-        .select(ExternalQuote::as_select())
+        .select(Quote::as_select())
         .load(conn)
         .expect("Error loading tickers");
     return Json(results);
 }
 
 // Define a function to search for a row by UUID
-fn find_row_by_uuid(uuid: Uuid, conn: &mut PgConnection) -> QueryResult<Option<ExternalQuote>> {
+fn find_row(id: i32, conn: &mut PgConnection) -> QueryResult<Option<Quote>> {
     return quotes::dsl::quotes
-        .filter(quotes::dsl::uuid.eq(uuid))
-        .select(ExternalQuote::as_select())
+        .find(id)
+        .select(Quote::as_select())
         .first(conn)
         .optional();
 }
 
-#[get("/quotes/<quote_uuid>")]
-pub fn show(quote_uuid: &str) -> Custom<String> {
+#[get("/quotes/<id>")]
+pub fn show(id: i32) -> Custom<String> {
     let conn = &mut db_connection();
 
-    match Uuid::parse_str(quote_uuid) {
-        Ok(x) => {
-            match find_row_by_uuid(x, conn) {
-                Ok(Some(row)) => Custom(Status::Ok, json::to_string(&row).unwrap()),
-                Ok(None) => Custom(Status::NotFound, to_resp(format!("Currency {} not found!", quote_uuid))),
-                Err(x) => Custom(Status::InternalServerError, to_resp(format!("Internal error {}",x)))
-            }
-        },
-        Err(x) => Custom(Status::UnprocessableEntity, to_resp(format!("uuid {} wrong format!", x)))
+    match find_row(id, conn) {
+        Ok(Some(row)) => Custom(Status::Ok, json::to_string(&row).unwrap()),
+        Ok(None) => Custom(Status::NotFound, to_resp(format!("Currency {} not found!", id))),
+        Err(x) => Custom(Status::InternalServerError, to_resp(format!("Internal error {}",x)))
     }
 }
 
@@ -79,25 +70,19 @@ pub async fn create(quote_params: &str) -> &'static str {
     return "Send to be process!"
 }
 
-#[delete("/quotes/<quote_uuid>")]
-pub fn destroy(quote_uuid: &str) -> Custom<String> {
+#[delete("/quotes/<id>")]
+pub fn destroy(id: i32) -> Custom<String> {
     let conn = &mut db_connection();
 
-    match Uuid::parse_str(quote_uuid) {
-        Ok(x) => {
-            match find_row_by_uuid(x, conn) {
-                Ok(Some(_record)) => {
-                    delete(quotes::dsl::quotes)
-                        .filter(quotes::dsl::uuid.eq(x))
-                        .execute(conn)
-                        .expect("Error loading quotes");
-                    Custom(Status::NoContent, "".to_string())
-                },
-                Ok(None) => Custom(Status::NotFound, to_resp(format!("Currency {} not found!", quote_uuid))),
-                Err(x) => Custom(Status::InternalServerError, to_resp(format!("Internal error {}",x)))
-            }
+    match find_row(id, conn) {
+        Ok(Some(_record)) => {
+            delete(quotes::dsl::quotes.find(id))
+                .execute(conn)
+                .expect("Error loading quotes");
+            Custom(Status::NoContent, "".to_string())
         },
-        Err(x) => Custom(Status::UnprocessableEntity, to_resp(format!("uuid {} wrong format!", x)))
+        Ok(None) => Custom(Status::NotFound, to_resp(format!("Currency {} not found!", id))),
+        Err(x) => Custom(Status::InternalServerError, to_resp(format!("Internal error {}",x)))
     }
 }
 

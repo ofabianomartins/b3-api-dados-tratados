@@ -26,17 +26,6 @@ pub struct Subsector {
     pub updated_at: NaiveDateTime,
 }
 
-#[derive(Debug, Queryable, Selectable, Serialize, Deserialize)]
-#[diesel(table_name = subsectors)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
-pub struct ExternalSubsector {
-    pub name: String,
-    pub sector_id: i32,
-    pub uuid: Uuid,
-    pub created_at: NaiveDateTime,
-    pub updated_at: NaiveDateTime,
-}
-
 #[derive(Debug, Serialize, Deserialize, Insertable)]
 #[diesel(table_name = subsectors)]
 pub struct NewSubsector<'a> {

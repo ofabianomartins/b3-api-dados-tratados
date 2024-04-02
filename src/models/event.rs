@@ -33,22 +33,6 @@ pub struct Event {
     pub updated_at: NaiveDateTime,
 }
 
-#[derive(Debug, Clone, Queryable, Selectable, Serialize, Deserialize)]
-#[diesel(table_name = events)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
-pub struct ExternalEvent {
-    pub ticker_id: i32,
-    pub date: NaiveDate,
-    pub ex_date: NaiveDate,
-    pub liquidation_date: NaiveDate,
-    pub type_: String,
-    pub factor: BigDecimal,
-    pub strike: Option<BigDecimal>,
-    pub uuid: Uuid,
-    pub created_at: NaiveDateTime,
-    pub updated_at: NaiveDateTime,
-}
-
 #[derive(Debug, Serialize, Deserialize, Insertable)]
 #[diesel(table_name = events)]
 pub struct NewEvent<'a> {

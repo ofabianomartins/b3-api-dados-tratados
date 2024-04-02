@@ -7,11 +7,8 @@ use rocket::serde::json;
 use diesel::prelude::*;
 use diesel::insert_into;
 
-use uuid::Uuid;
-
 use crate::models::company::Company;
 use crate::models::company::NewCompany;
-use crate::models::company::ExternalCompany;
 use crate::schema::companies;
 use crate::connections::db_connection;
 
@@ -45,7 +42,7 @@ fn test_get_companies() {
     assert_eq!(response.status(), Status::Ok);
 
     let test = response.into_string().unwrap();
-    let companies_list: Vec<ExternalCompany> = json::from_str(&test).expect("Failed to read JSON");
+    let companies_list: Vec<Company> = json::from_str(&test).expect("Failed to read JSON");
     assert_eq!(companies_list.len(), 1); // Expecting three calendars in the response
     
     clean_database(connection);
@@ -60,7 +57,7 @@ fn test_show_companies() {
     let result_company = setup_data(connection);
 
     let client = Client::tracked(rocket()).expect("valid rocket instance");
-    let response = client.get(format!("/api/companies/{}", result_company.uuid ))
+    let response = client.get(format!("/api/companies/{}", result_company.id ))
         .header(ContentType::JSON)
         .dispatch();
 
@@ -78,29 +75,13 @@ fn test_show_companies_not_exists() {
 
     // Action: Make a request to the route
     let client = Client::tracked(rocket()).expect("valid rocket instance");
-    let response = client.get(format!("/api/companies/{}", Uuid::new_v4()))
+    let response = client.get(format!("/api/companies/{}", 1000))
         .header(ContentType::JSON)
         .dispatch();
 
     // Assert: Check if the response contains the expected data
     assert_eq!(response.status(), Status::NotFound);
     // assert_eq!(response.len(), 2); // Expecting three companiess in the response
-
-    clean_database(connection);
-}
-
-#[test]
-fn test_show_companies_wrong_uuid() {
-    let connection = &mut db_connection();
-    clean_database(connection);
-
-    // Action: Make a request to the route
-    let client = Client::tracked(rocket()).expect("valid rocket instance");
-    let response = client.get("/api/companies/test2")
-        .header(ContentType::JSON)
-        .dispatch();
-
-    assert_eq!(response.status(), Status::UnprocessableEntity);
 
     clean_database(connection);
 }
@@ -145,7 +126,7 @@ fn test_update_currency() {
 
     // Action: Make a request to the route
     let client = Client::tracked(rocket()).expect("valid rocket instance");
-    let response = client.put(format!("/api/companies/{}", result_company.uuid ))
+    let response = client.put(format!("/api/companies/{}", result_company.id ))
         .header(ContentType::JSON)
         .body(json::to_string(&new_company).unwrap())
         .dispatch();
@@ -177,7 +158,7 @@ fn test_delete_company() {
 
     // Action: Make a request to the route
     let client = Client::tracked(rocket()).expect("valid rocket instance");
-    let response = client.delete(format!("/api/companies/{}", result_company.uuid ))
+    let response = client.delete(format!("/api/companies/{}", result_company.id ))
         .header(ContentType::JSON)
         .dispatch();
 

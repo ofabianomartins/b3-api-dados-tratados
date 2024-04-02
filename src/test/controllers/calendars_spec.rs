@@ -7,11 +7,8 @@ use rocket::serde::json;
 use diesel::prelude::*;
 use diesel::insert_into;
 
-use uuid::Uuid;
-
 use crate::models::calendar::Calendar;
 use crate::models::calendar::NewCalendar;
-use crate::models::calendar::ExternalCalendar;
 use crate::schema::calendars;
 use crate::connections::db_connection;
 
@@ -42,7 +39,7 @@ fn test_get_calendars() {
     assert_eq!(response.status(), Status::Ok);
 
     let test = response.into_string().unwrap();
-    let calendars_list: Vec<ExternalCalendar> = json::from_str(&test).expect("Failed to read JSON");
+    let calendars_list: Vec<Calendar> = json::from_str(&test).expect("Failed to read JSON");
     assert_eq!(calendars_list.len(), 1); // Expecting three calendars in the response
     
     clean_database(connection);
@@ -56,7 +53,7 @@ fn test_show_calendars() {
 
     // Action: Make a request to the route
     let client = Client::tracked(rocket()).expect("valid rocket instance");
-    let response = client.get(format!("/api/calendars/{}", result_calendar.uuid ))
+    let response = client.get(format!("/api/calendars/{}", result_calendar.id ))
         .header(ContentType::JSON)
         .dispatch();
 
@@ -74,29 +71,13 @@ fn test_show_calendar_not_exists() {
 
     // Action: Make a request to the route
     let client = Client::tracked(rocket()).expect("valid rocket instance");
-    let response = client.get(format!("/api/calendars/{}", Uuid::new_v4()))
+    let response = client.get(format!("/api/calendars/{}",1000))
         .header(ContentType::JSON)
         .dispatch();
 
     // Assert: Check if the response contains the expected data
     assert_eq!(response.status(), Status::NotFound);
     // assert_eq!(response.len(), 2); // Expecting three calendars in the response
-
-    clean_database(connection);
-}
-
-#[test]
-fn test_show_calendar_wrong_uuid() {
-    let connection = &mut db_connection();
-    clean_database(connection);
-
-    // Action: Make a request to the route
-    let client = Client::tracked(rocket()).expect("valid rocket instance");
-    let response = client.get("/api/calendars/test2")
-        .header(ContentType::JSON)
-        .dispatch();
-
-    assert_eq!(response.status(), Status::UnprocessableEntity);
 
     clean_database(connection);
 }

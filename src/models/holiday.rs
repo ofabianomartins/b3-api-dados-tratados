@@ -28,18 +28,6 @@ pub struct Holiday {
     pub updated_at: NaiveDateTime,
 }
 
-#[derive(Debug, Queryable, Selectable, Serialize, Deserialize)]
-#[diesel(table_name = holidays)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
-pub struct ExternalHoliday {
-    pub name: String,
-    pub date: NaiveDate,
-    pub calendar_id: i32,
-    pub uuid: Uuid,
-    pub created_at: NaiveDateTime,
-    pub updated_at: NaiveDateTime,
-}
-
 #[derive(Debug, Serialize, Deserialize, Insertable)]
 #[diesel(table_name = holidays)]
 pub struct NewHoliday<'a> {
